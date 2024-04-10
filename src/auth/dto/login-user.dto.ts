@@ -1,5 +1,4 @@
 import {
-  IsEmail,
   IsLowercase,
   IsString,
   Matches,
@@ -7,20 +6,12 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class CreateUserDto {
-  @IsString()
-  @MaxLength(21)
-  name: string;
-
+export class LoginUserDto {
   @IsString()
   @MaxLength(16)
   @MinLength(6)
   @IsLowercase()
   username: string;
-
-  @IsEmail()
-  @IsString()
-  email: string;
 
   @IsString()
   @Matches(/(?:(?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
@@ -30,7 +21,4 @@ export class CreateUserDto {
   @MinLength(8)
   @MaxLength(21)
   password: string;
-
-  @IsString()
-  confirmPassword: string;
 }
