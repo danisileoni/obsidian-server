@@ -1,4 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class User {
@@ -44,4 +50,15 @@ export class User {
     default: true,
   })
   isActive: boolean;
+
+  @BeforeInsert()
+  checkFieldsBeforeInsert(): void {
+    this.email = this.email.toLowerCase().trim();
+    this.username = this.username.toLowerCase().trim();
+  }
+
+  @BeforeUpdate()
+  checkFieldsBeforeUpdate(): void {
+    this.checkFieldsBeforeInsert();
+  }
 }

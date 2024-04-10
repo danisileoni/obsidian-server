@@ -20,6 +20,7 @@ export class CreateUserDto {
 
   @IsEmail()
   @IsString()
+  @IsLowercase()
   email: string;
 
   @IsString()

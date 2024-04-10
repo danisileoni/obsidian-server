@@ -11,6 +11,9 @@ import * as argon2 from 'argon2';
 import { type CreateUserDto } from 'src/users/dto/create-user.dto';
 import { type LoginUserDto } from './dto/login-user.dto';
 import { type UpdateUserDto } from 'src/users/dto/update-user.dto';
+import { JwtService } from '@nestjs/jwt';
+import { type Response } from 'express';
+import { type JwtPayload } from './interfaces/jwt-payload.interface';
 
 const options = {
   timeCost: 2,
@@ -26,9 +29,13 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
+    private readonly jwtService: JwtService,
   ) {}
 
-  async register(createUserDto: CreateUserDto): Promise<User> {
+  async register(
+    createUserDto: CreateUserDto,
+    res: Response,
+  ): Promise<Response<User>> {
     const { password, confirmPassword, ...userData } = createUserDto;
 
     if (password !== confirmPassword) {
@@ -48,10 +55,19 @@ export class AuthService {
     });
     delete user.password;
 
-    return user;
+    const token = await this.jwtSing(user);
+    res.cookie('token', token, {
+      httpOnly: false,
+      sameSite: 'lax',
+      secure: true,
+    });
+    return res.status(200).send({ user });
   }
 
-  async login(loginUserDto: LoginUserDto): Promise<User> {
+  async login(
+    loginUserDto: LoginUserDto,
+    res: Response,
+  ): Promise<Response<User>> {
     const { password, username } = loginUserDto;
 
     const user = await this.usersRepository.findOne({
@@ -65,9 +81,13 @@ export class AuthService {
 
     delete user.password;
 
-    return {
-      ...user,
-    };
+    const token = await this.jwtSing(user);
+    res.cookie('token', token, {
+      httpOnly: false,
+      sameSite: 'lax',
+      secure: true,
+    });
+    return res.status(200).send({ user });
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<any> {
@@ -101,5 +121,10 @@ export class AuthService {
         `The ${detailsError[1]} '${detailsError[2]}' already exists`,
       );
     }
+  }
+
+  private async jwtSing(payload: JwtPayload): Promise<string> {
+    const token = await this.jwtService.signAsync({ id: payload.id });
+    return token;
   }
 }
