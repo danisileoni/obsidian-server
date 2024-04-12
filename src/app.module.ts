@@ -10,6 +10,7 @@ import { FilesModule } from './files/files.module';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
+import { CommonModule } from './common/common.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { memoryStorage } from 'multer';
     ProductsModule,
     FilesModule,
     CloudinaryModule,
+    CommonModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

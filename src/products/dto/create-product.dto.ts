@@ -1,4 +1,5 @@
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { Expose, Type } from 'class-transformer';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreateProductDto {
   @IsString()
@@ -7,18 +8,24 @@ export class CreateProductDto {
   @IsString()
   description: string;
 
-  @IsNumber()
   @IsOptional()
+  @Type(() => Number)
   pricePrimary: number;
 
-  @IsNumber()
   @IsOptional()
+  @Type(() => Number)
   priceSecondary: number;
 
-  @IsNumber()
   @IsOptional()
+  @Type(() => Number)
   price: number;
 
-  @IsString({ each: true })
+  @IsString()
+  @Expose({ name: 'tags' })
   tags: string[];
+
+  @Expose({ name: 'tags' })
+  getTags(): string[] {
+    return (this.tags as unknown as string).split(', ');
+  }
 }

@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import { FilesService } from './files.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { fileFilter } from './helpers/fileFilter.helper';
+import { fileFilter } from '../common/helpers/fileFilter.helper';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { type CloudinaryResponse } from 'src/cloudinary/cloudinary-response';
-import { ParseSharpPipe } from './pipes/sharp-pipe.pipe';
+import { ParseSharpPipe } from '../common/pipes/sharp-pipe.pipe';
 
 @Controller('files')
 export class FilesController {

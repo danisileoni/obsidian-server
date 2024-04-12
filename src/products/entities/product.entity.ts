@@ -1,4 +1,11 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { ProductImage } from './';
 
 @Entity()
@@ -16,17 +23,17 @@ export class Product {
   description: string;
 
   @Column('numeric', {
-    default: 0,
+    nullable: true,
   })
   pricePrimary: number;
 
   @Column('numeric', {
-    default: 0,
+    nullable: true,
   })
   priceSecondary: number;
 
   @Column('numeric', {
-    default: 0,
+    nullable: true,
   })
   price: number;
 
@@ -48,6 +55,27 @@ export class Product {
 
   @OneToMany(() => ProductImage, (productImage) => productImage.product, {
     cascade: true,
+    eager: true,
   })
   images: ProductImage[];
+
+  @BeforeInsert()
+  checkSlugInsert(): void {
+    this.slug = this.title
+      .toLocaleLowerCase()
+      .trim()
+      .replaceAll(' ', '_')
+      .replaceAll("'", '')
+      .replaceAll('.', '');
+  }
+
+  @BeforeUpdate()
+  checkSlugUpdate(): void {
+    this.slug = this.title
+      .toLocaleLowerCase()
+      .trim()
+      .replaceAll(' ', '_')
+      .replaceAll("'", '')
+      .replaceAll('.', '');
+  }
 }
