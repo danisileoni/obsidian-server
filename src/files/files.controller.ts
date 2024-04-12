@@ -1,14 +1,11 @@
 import {
   Controller,
   Post,
-  UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesService } from './files.service';
-import {
-  FileFieldsInterceptor,
-  FileInterceptor,
-} from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { fileFilter } from './helpers/fileFilter.helper';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { type CloudinaryResponse } from 'src/cloudinary/cloudinary-response';
@@ -23,14 +20,19 @@ export class FilesController {
 
   @Post('product')
   @UseInterceptors(
-    FileFieldsInterceptor([{ name: 'files', maxCount: 5 }], {
+    FilesInterceptor('files', 6, {
       fileFilter,
-      limits: { fileSize: 2000 },
     }),
   )
   async uploadFileImage(
-    @UploadedFile(ParseSharpPipe) file: Express.Multer.File,
-  ): Promise<CloudinaryResponse> {
-    return await this.cloudinaryService.uploadFile(file.buffer);
+    @UploadedFiles(ParseSharpPipe) files: Express.Multer.File[],
+  ): Promise<CloudinaryResponse[]> {
+    const resultFiles = await Promise.all(
+      files.map(async (img) => {
+        return await this.cloudinaryService.uploadFile(img.buffer);
+      }),
+    );
+
+    return resultFiles;
   }
 }
