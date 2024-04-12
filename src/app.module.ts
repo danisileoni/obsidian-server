@@ -5,9 +5,15 @@ import { UsersModule } from './users/users.module';
 import { AuthController } from './auth/auth.controller';
 import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
+import { ProductsModule } from './products/products.module';
+import { FilesModule } from './files/files.module';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { MulterModule } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 
 @Module({
   imports: [
+    MulterModule.register({ storage: memoryStorage }),
     ConfigModule.forRoot(),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -21,6 +27,9 @@ import { AuthModule } from './auth/auth.module';
     }),
     UsersModule,
     AuthModule,
+    ProductsModule,
+    FilesModule,
+    CloudinaryModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
