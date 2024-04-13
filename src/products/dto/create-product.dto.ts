@@ -21,11 +21,5 @@ export class CreateProductDto {
   price: number;
 
   @IsString()
-  @Expose({ name: 'tags' })
   tags: string[];
-
-  @Expose({ name: 'tags' })
-  getTags(): string[] {
-    return (this.tags as unknown as string).split(', ');
-  }
 }

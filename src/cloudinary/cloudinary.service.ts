@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { type CloudinaryResponse } from './cloudinary-response';
 import { v2 as cloudinary } from 'cloudinary';
 import { Readable } from 'stream';
@@ -7,6 +11,10 @@ import { v4 as uuid } from 'uuid';
 @Injectable()
 export class CloudinaryService {
   async uploadFile(file: Buffer): Promise<CloudinaryResponse> {
+    if (!file) {
+      throw new NotFoundException('Images Not found');
+    }
+
     return await new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {

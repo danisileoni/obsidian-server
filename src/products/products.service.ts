@@ -31,6 +31,9 @@ export class ProductsService {
         'Images Not found, make sure you are loading the images',
       );
     }
+    createProductDto.tags = (createProductDto.tags as unknown as string).split(
+      ', ',
+    );
 
     const resultImages = await Promise.all(
       fileImages.map(async (img) => {
@@ -56,7 +59,7 @@ export class ProductsService {
   }
 
   async findAll(paginationDto: PaginationDto): Promise<Product[]> {
-    const { limit, offset } = paginationDto;
+    const { limit = 10, offset = 0 } = paginationDto;
 
     const products = await this.productRepository.find({
       take: limit,
@@ -66,7 +69,7 @@ export class ProductsService {
       },
     });
 
-    if (products) {
+    if (!products) {
       throw new NotFoundException('Products not found, create a product');
     }
 
@@ -89,8 +92,66 @@ export class ProductsService {
     return product;
   }
 
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
+  async update(
+    id: string,
+    fileImages: Express.Multer.File[],
+    updateProductDto: UpdateProductDto,
+  ): Promise<object> {
+    if (updateProductDto.tags) {
+      updateProductDto.tags = (
+        updateProductDto.tags as unknown as string
+      ).split(', ');
+    }
+
+    // remove image
+    if (updateProductDto.idImage) {
+      updateProductDto.idImage = (updateProductDto.idImage as unknown as string)
+        .split(', ')
+        .map((num) => {
+          return Number(num);
+        });
+
+      for (const idImg of updateProductDto.idImage) {
+        await this.productImageRepository.delete({ id: idImg });
+      }
+    }
+
+    // upload new images
+    if (fileImages) {
+      const resultImages = await Promise.all(
+        fileImages.map(async (img) => {
+          const file = await this.cloudinaryService.uploadFile(img.buffer);
+          return file.secure_url;
+        }),
+      );
+
+      const product = await this.productRepository.findOneBy({ id });
+
+      product.images = resultImages.map((image) => {
+        return this.productImageRepository.create({
+          url: image,
+        });
+      });
+
+      await this.productRepository.save(product);
+    }
+
+    // update
+    if (updateProductDto) {
+      const product = await this.productRepository.preload({
+        id,
+        ...updateProductDto,
+      });
+
+      await this.productRepository.save(product);
+
+      const { images } = product;
+
+      return {
+        product,
+        images,
+      };
+    }
   }
 
   remove(id: number) {

@@ -8,6 +8,7 @@ import {
   Delete,
   UseInterceptors,
   UploadedFiles,
+  Query,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -36,7 +37,7 @@ export class ProductsController {
   }
 
   @Get()
-  async findAll(paginationDto: PaginationDto): Promise<Product[]> {
+  async findAll(@Query() paginationDto: PaginationDto): Promise<Product[]> {
     return await this.productsService.findAll(paginationDto);
   }
 
@@ -46,8 +47,17 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productsService.update(+id, updateProductDto);
+  @UseInterceptors(
+    FilesInterceptor('images', 6, {
+      fileFilter,
+    }),
+  )
+  async update(
+    @UploadedFiles(ParseSharpPipe) images: Express.Multer.File[],
+    @Param('id') id: string,
+    @Body() updateProductDto: UpdateProductDto,
+  ) {
+    return await this.productsService.update(id, images, updateProductDto);
   }
 
   @Delete(':id')
