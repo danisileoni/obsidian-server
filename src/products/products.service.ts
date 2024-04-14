@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -6,7 +7,7 @@ import {
 import { type CreateProductDto } from './dto/create-product.dto';
 import { type UpdateProductDto } from './dto/update-product.dto';
 import { Product, ProductImage } from './entities';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { type PaginationDto } from 'src/common/dtos/pagination.dto';
@@ -20,6 +21,7 @@ export class ProductsService {
     @InjectRepository(ProductImage)
     private readonly productImageRepository: Repository<ProductImage>,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(
@@ -97,64 +99,91 @@ export class ProductsService {
     fileImages: Express.Multer.File[],
     updateProductDto: UpdateProductDto,
   ): Promise<object> {
-    if (updateProductDto.tags) {
-      updateProductDto.tags = (
-        updateProductDto.tags as unknown as string
-      ).split(', ');
+    if (!isUUID(id)) {
+      throw new BadRequestException('Has id validate');
     }
 
-    // remove image
-    if (updateProductDto.idImage) {
-      updateProductDto.idImage = (updateProductDto.idImage as unknown as string)
-        .split(', ')
-        .map((num) => {
-          return Number(num);
-        });
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-      for (const idImg of updateProductDto.idImage) {
-        await this.productImageRepository.delete({ id: idImg });
+    const productUpdate = await this.productRepository.findOneBy({ id });
+
+    try {
+      if (updateProductDto.tags) {
+        updateProductDto.tags = (
+          updateProductDto.tags as unknown as string
+        ).split(', ');
       }
-    }
 
-    // upload new images
-    if (fileImages) {
-      const resultImages = await Promise.all(
-        fileImages.map(async (img) => {
-          const file = await this.cloudinaryService.uploadFile(img.buffer);
-          return file.secure_url;
-        }),
-      );
+      // remove image
+      if (updateProductDto.idImage) {
+        updateProductDto.idImage = (
+          updateProductDto.idImage as unknown as string
+        )
+          .split(', ')
+          .map((num) => {
+            return Number(num);
+          });
 
-      const product = await this.productRepository.findOneBy({ id });
+        const { idImage } = updateProductDto;
 
-      product.images = resultImages.map((image) => {
-        return this.productImageRepository.create({
-          url: image,
-        });
-      });
+        for (const idImg of idImage) {
+          await queryRunner.manager.delete(ProductImage, { id: idImg });
+          productUpdate.images = productUpdate.images.filter(
+            (img) => img.id !== idImg,
+          );
+        }
+      }
 
-      await this.productRepository.save(product);
-    }
+      // upload new images
+      if (fileImages) {
+        const resultImages = await Promise.all(
+          fileImages.map(async (img) => {
+            const file = await this.cloudinaryService.uploadFile(img.buffer);
+            return file.secure_url;
+          }),
+        );
 
-    // update
-    if (updateProductDto) {
-      const product = await this.productRepository.preload({
-        id,
-        ...updateProductDto,
-      });
+        productUpdate.images = [
+          ...productUpdate.images,
+          ...resultImages.map((img) =>
+            this.productImageRepository.create({ url: img }),
+          ),
+        ];
+      }
 
-      await this.productRepository.save(product);
+      // Update Product with assign
+      Object.assign(productUpdate, updateProductDto);
 
-      const { images } = product;
-
-      return {
-        product,
-        images,
-      };
+      await queryRunner.manager.save(productUpdate);
+      await queryRunner.commitTransaction();
+      await queryRunner.release();
+      // update
+      return await this.productRepository.findOneBy({ id });
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      await queryRunner.release();
+      throw new InternalServerErrorException(error);
     }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string): Promise<object> {
+    const product = await this.productRepository.findOneBy({ id });
+    if (!product) {
+      throw new NotFoundException(`Product not found with id: ${id}`);
+    }
+
+    try {
+      await this.productRepository.remove(product);
+
+      return {
+        ok: true,
+        message: 'The product is remove success',
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Check the server logs');
+    }
   }
 }

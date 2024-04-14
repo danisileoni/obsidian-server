@@ -56,12 +56,12 @@ export class ProductsController {
     @UploadedFiles(ParseSharpPipe) images: Express.Multer.File[],
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
-  ) {
+  ): Promise<object> {
     return await this.productsService.update(id, images, updateProductDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.productsService.remove(+id);
+  async remove(@Param('id') id: string): Promise<object> {
+    return await this.productsService.remove(id);
   }
 }
