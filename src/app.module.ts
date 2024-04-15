@@ -11,6 +11,7 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { CommonModule } from './common/common.module';
+import { AccountsModule } from './accounts/accounts.module';
 
 @Module({
   imports: [
@@ -32,8 +33,10 @@ import { CommonModule } from './common/common.module';
     FilesModule,
     CloudinaryModule,
     CommonModule,
+    AccountsModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
+  exports: [ConfigModule],
 })
 export class AppModule {}
