@@ -36,7 +36,7 @@ export class AccountsController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.accountsService.remove(id);
+  async remove(@Param('id') id: string): Promise<object> {
+    return await this.accountsService.remove(id);
   }
 }

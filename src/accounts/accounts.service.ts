@@ -65,11 +65,6 @@ export class AccountsService {
   ): Promise<Account> {
     const { email, password } = updateAccountDto;
 
-    console.log({
-      email,
-      password,
-    });
-
     const account = await this.accountRepository.preload({
       id,
       email: this.getCrypto(email),
@@ -89,8 +84,22 @@ export class AccountsService {
     }
   }
 
-  remove(id: string) {
-    return `This action removes a #${id} account`;
+  async remove(id: string): Promise<object> {
+    const account = await this.accountRepository.findOneBy({ id });
+    if (!account) {
+      throw new NotFoundException(`Account not found with id: ${id}`);
+    }
+
+    try {
+      await this.accountRepository.remove(account);
+
+      return {
+        message: 'Success remove account ',
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Check the server logs');
+    }
   }
 
   private getCrypto(data: string): string {
