@@ -1,3 +1,11 @@
 {
-  "cSpell.words": ["Cloudinary", "dtos", "nestjs", "typeorm"]
+  "cSpell.words": [
+    "Cloudinary",
+    "dtos",
+    "idempotency",
+    "mercadopago",
+    "nestjs",
+    "PAGO",
+    "typeorm"
+  ]
 }

@@ -12,6 +12,8 @@ import { MulterModule } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { CommonModule } from './common/common.module';
 import { AccountsModule } from './accounts/accounts.module';
+import { PaymentsModule } from './payments/payments.module';
+import { MercadopagoModule } from './mercadopago/mercadopago.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { AccountsModule } from './accounts/accounts.module';
     CloudinaryModule,
     CommonModule,
     AccountsModule,
+    PaymentsModule,
+    MercadopagoModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
