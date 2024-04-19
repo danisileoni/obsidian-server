@@ -1,8 +1,10 @@
+import { Payment } from 'src/payments/entities/payment.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
   Column,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -50,6 +52,12 @@ export class User {
     default: true,
   })
   isActive: boolean;
+
+  @OneToMany(() => Payment, (payment) => payment.user, {
+    cascade: true,
+    eager: true,
+  })
+  shopping: Payment[];
 
   @BeforeInsert()
   checkFieldsBeforeInsert(): void {

@@ -109,6 +109,10 @@ export class ProductsService {
 
     const productUpdate = await this.productRepository.findOneBy({ id });
 
+    if (!productUpdate) {
+      throw new NotFoundException(`Product not found with id: ${id}`);
+    }
+
     try {
       if (updateProductDto.tags) {
         updateProductDto.tags = (

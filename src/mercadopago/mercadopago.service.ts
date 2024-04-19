@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Payment } from 'mercadopago';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
+import { type MercadoPagoArs } from 'src/types';
 import { v4 as uuid } from 'uuid';
 
 @Injectable()
@@ -15,17 +16,17 @@ export class MercadopagoService {
     private readonly payment: Payment,
   ) {}
 
-  async createOrder(
-    token: string,
-    title: string,
-    description: string,
-    amount: number,
-    email: string,
-    method: string,
-    quantity: number,
-    type: string,
-    numbers: string,
-  ): Promise<PaymentResponse> {
+  async createOrder({
+    token,
+    title,
+    description,
+    amount,
+    email,
+    method,
+    quantity,
+    type,
+    numbers,
+  }: MercadoPagoArs): Promise<PaymentResponse> {
     try {
       const order = await this.payment.create({
         body: {
@@ -35,7 +36,7 @@ export class MercadopagoService {
                 id: uuid(),
                 title,
                 description,
-                category_id: 'gamedigital',
+                category_id: 'game_digital',
                 quantity,
                 unit_price: amount,
               },

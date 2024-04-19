@@ -6,39 +6,31 @@ import {
   Patch,
   Param,
   Delete,
-  Req,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
-import { MercadopagoService } from '../mercadopago/mercadopago.service';
-import { Request } from 'express';
+import { GetUser } from 'src/auth/decorators/get-user.decorator';
+import { User } from 'src/users/entities/user.entity';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 
 @Controller('payments')
 export class PaymentsController {
-  constructor(
-    private readonly paymentsService: PaymentsService,
-    private readonly mercadopagoService: MercadopagoService,
-  ) {}
+  constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post()
-  async create(@Body() createPaymentDto: CreatePaymentDto) {
-    return await this.paymentsService.create(createPaymentDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.paymentsService.findAll();
+  @Auth()
+  async create(
+    @Body() createPaymentDto: CreatePaymentDto,
+    @GetUser() user: User,
+  ): Promise<PaymentResponse> {
+    return await this.paymentsService.create(createPaymentDto, user);
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string): Promise<PaymentResponse> {
     return await this.paymentsService.findOne(id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePaymentDto: UpdatePaymentDto) {
-    return this.paymentsService.update(+id, updatePaymentDto);
   }
 
   @Delete(':id')
