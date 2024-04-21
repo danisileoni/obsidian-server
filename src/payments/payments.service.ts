@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { type CreatePaymentDto } from './dto/create-payment.dto';
 import { type UpdatePaymentDto } from './dto/update-payment.dto';
 import { MercadopagoService } from '../mercadopago/mercadopago.service';
@@ -7,6 +12,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Payment } from './entities/payment.entity';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
+import { type PaymentMethodDto } from './dto/payment-method.dto';
 
 @Injectable()
 export class PaymentsService {
@@ -18,39 +24,44 @@ export class PaymentsService {
     private readonly mercadopagoService: MercadopagoService,
   ) {}
 
+  // TODO: make documentation of each slider
   async create(
     createPaymentDto: CreatePaymentDto,
     user: User,
-  ): Promise<PaymentResponse> {
-    try {
-      const order = await this.mercadopagoService.createOrder(createPaymentDto);
+  ): Promise<CreatePaymentDto | PaymentResponse> {
+    let order: CreatePaymentDto | PaymentResponse;
+    const { paymentGateway } = createPaymentDto;
 
-      const userAssignedShopping = await this.userRepository.findOne({
-        where: { id: user.id },
-        relations: ['shopping'],
-      });
-
-      userAssignedShopping.shopping = [
-        ...userAssignedShopping.shopping,
-        ...order.additional_info.items.map((item) => {
-          return this.paymentRepository.create({
-            idPayment: order.id,
-            email: order.payer.email,
-            nameProduct: item.title,
-          });
-        }),
-      ];
-
-      await this.userRepository.save(userAssignedShopping);
-
-      return order;
-    } catch (error) {
-      console.log(error);
-      throw new BadRequestException(error);
+    if (!paymentGateway) {
+      throw new BadRequestException('Property not found in body');
     }
+
+    const shoppingAssignedUser = await this.userRepository.findOne({
+      where: { id: user.id },
+      relations: ['shopping'],
+    });
+    if (!shoppingAssignedUser) {
+      throw new NotFoundException(`User not found with id: ${user.id}`);
+    }
+
+    if (paymentGateway === 'mercadopago') {
+      order = await this.mercadoPago(createPaymentDto, shoppingAssignedUser);
+    }
+
+    console.log({ shoppingAssignedUser });
+
+    await this.userRepository.save(shoppingAssignedUser).catch((error) => {
+      console.log(error);
+      throw new InternalServerErrorException('Check logs server');
+    });
+
+    return order;
   }
 
-  async findOne(id: string): Promise<PaymentResponse> {
+  async findOne(
+    id: string,
+    paymentMethodDto: PaymentMethodDto,
+  ): Promise<PaymentResponse> {
     return await this.mercadopagoService.searchOrder(id);
   }
 
@@ -60,5 +71,29 @@ export class PaymentsService {
 
   remove(id: number) {
     return `This action removes a #${id} payment`;
+  }
+
+  private async mercadoPago(
+    data: CreatePaymentDto,
+    shoppingAssignedUser: User,
+  ): Promise<PaymentResponse> {
+    const order = await this.mercadopagoService
+      .createOrder(data)
+      .catch((error) => {
+        throw new BadRequestException(error);
+      });
+
+    shoppingAssignedUser.shopping.push(
+      ...order.additional_info.items.map((item) => {
+        return this.paymentRepository.create({
+          idPayment: order.id,
+          email: order.payer.email,
+          nameProduct: item.title,
+          paymentGateway: data.paymentGateway,
+        });
+      }),
+    );
+
+    return order;
   }
 }

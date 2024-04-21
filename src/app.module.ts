@@ -14,6 +14,7 @@ import { CommonModule } from './common/common.module';
 import { AccountsModule } from './accounts/accounts.module';
 import { PaymentsModule } from './payments/payments.module';
 import { MercadopagoModule } from './mercadopago/mercadopago.module';
+import { PaypalModule } from './paypal/paypal.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { MercadopagoModule } from './mercadopago/mercadopago.module';
     AccountsModule,
     PaymentsModule,
     MercadopagoModule,
+    PaypalModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

@@ -6,6 +6,7 @@ export class Payment {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  // TODO: change a string or transform
   @Column('numeric', {
     nullable: false,
   })
@@ -26,6 +27,11 @@ export class Payment {
     nullable: false,
   })
   email: string;
+
+  @Column('text', {
+    nullable: false,
+  })
+  paymentGateway: string;
 
   @ManyToOne(() => User, (user) => user.shopping)
   user: User;

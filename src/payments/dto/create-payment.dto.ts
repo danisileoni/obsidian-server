@@ -27,4 +27,7 @@ export class CreatePaymentDto {
 
   @IsString()
   numbers: string;
+
+  @IsString()
+  paymentGateway?: string;
 }

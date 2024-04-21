@@ -7,6 +7,7 @@ import { Payment } from './entities/payment.entity';
 import { User } from 'src/users/entities/user.entity';
 import { PassportModule } from '@nestjs/passport';
 import { AuthModule } from 'src/auth/auth.module';
+import { PaypalModule } from 'src/paypal/paypal.module';
 
 @Module({
   controllers: [PaymentsController],
@@ -16,6 +17,7 @@ import { AuthModule } from 'src/auth/auth.module';
     MercadopagoModule,
     AuthModule,
     PassportModule,
+    PaypalModule,
   ],
 })
 export class PaymentsModule {}
