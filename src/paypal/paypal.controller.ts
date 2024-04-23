@@ -12,7 +12,7 @@ export class PaypalController {
   }
 
   @Get('cancel-order')
-  cancelOrder(@Query() query: PaypalQuery) {
-    return this.paypalService.cancelOrder(query);
+  cancelOrder() {
+    return this.paypalService.cancelOrder();
   }
 }
