@@ -5,7 +5,6 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { type CreatePaymentDto } from './dto/create-payment.dto';
-import { type UpdatePaymentDto } from './dto/update-payment.dto';
 import { MercadopagoService } from '../mercadopago/mercadopago.service';
 import { User } from 'src/users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -13,6 +12,8 @@ import { Repository } from 'typeorm';
 import { Payment } from './entities/payment.entity';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 import { type PaymentMethodDto } from './dto/payment-method.dto';
+import { PaypalService } from 'src/paypal/paypal.service';
+import { type PaypalCaptureResponse, type PaypalResponse } from 'src/types';
 
 @Injectable()
 export class PaymentsService {
@@ -22,14 +23,15 @@ export class PaymentsService {
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
     private readonly mercadopagoService: MercadopagoService,
+    private readonly paypalService: PaypalService,
   ) {}
 
   // TODO: make documentation of each slider
   async create(
     createPaymentDto: CreatePaymentDto,
     user: User,
-  ): Promise<CreatePaymentDto | PaymentResponse> {
-    let order: CreatePaymentDto | PaymentResponse;
+  ): Promise<CreatePaymentDto | PaymentResponse | PaypalResponse> {
+    let order: CreatePaymentDto | PaymentResponse | PaypalResponse;
     const { paymentGateway } = createPaymentDto;
 
     if (!paymentGateway) {
@@ -46,6 +48,10 @@ export class PaymentsService {
 
     if (paymentGateway === 'mercadopago') {
       order = await this.mercadoPago(createPaymentDto, shoppingAssignedUser);
+    }
+
+    if (paymentGateway === 'paypal') {
+      order = await this.paypal(createPaymentDto);
     }
 
     console.log({ shoppingAssignedUser });
@@ -65,10 +71,6 @@ export class PaymentsService {
     return await this.mercadopagoService.searchOrder(id);
   }
 
-  update(id: number, updatePaymentDto: UpdatePaymentDto) {
-    return `This action updates a #${id} payment`;
-  }
-
   remove(id: number) {
     return `This action removes a #${id} payment`;
   }
@@ -77,6 +79,8 @@ export class PaymentsService {
     data: CreatePaymentDto,
     shoppingAssignedUser: User,
   ): Promise<PaymentResponse> {
+    console.log(data);
+
     const order = await this.mercadopagoService
       .createOrder(data)
       .catch((error) => {
@@ -93,6 +97,29 @@ export class PaymentsService {
         });
       }),
     );
+
+    return order;
+  }
+
+  public async paypalCapture(
+    data: PaypalCaptureResponse,
+    shoppingAssignedUser: User,
+  ) {
+    shoppingAssignedUser.shopping.push(
+      ...this.paymentRepository.create({
+        idPayment: order.id,
+        email: order.payer.email,
+        nameProduct: item.title,
+        paymentGateway: data.paymentGateway,
+      }),
+    );
+  }
+
+  private async paypal(data: CreatePaymentDto): Promise<PaypalResponse> {
+    const order = await this.paypalService.create(data).catch((error) => {
+      console.log(error);
+      throw new InternalServerErrorException('Check logs server');
+    });
 
     return order;
   }

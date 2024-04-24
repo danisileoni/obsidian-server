@@ -18,12 +18,10 @@ export class MercadopagoService {
 
   async createOrder({
     token,
-    title,
-    description,
+    items,
     amount,
     email,
     method,
-    quantity,
     type,
     numbers,
   }: MercadoPagoArs): Promise<PaymentResponse> {
@@ -31,16 +29,16 @@ export class MercadopagoService {
       const order = await this.payment.create({
         body: {
           additional_info: {
-            items: [
-              {
+            items: items.map((item) => {
+              return {
                 id: uuid(),
-                title,
-                description,
+                title: item.title,
+                description: item.description,
                 category_id: 'game_digital',
-                quantity,
-                unit_price: amount,
-              },
-            ],
+                quantity: item.quantity,
+                unit_price: item.amount,
+              };
+            }),
           },
           token,
           transaction_amount: amount,

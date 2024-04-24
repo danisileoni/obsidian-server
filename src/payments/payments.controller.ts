@@ -5,15 +5,11 @@ import { GetUser } from 'src/auth/decorators/get-user.decorator';
 import { User } from 'src/users/entities/user.entity';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
-import { PaypalService } from '../paypal/paypal.service';
 import { PaymentMethodDto } from './dto/payment-method.dto';
 
 @Controller('payments')
 export class PaymentsController {
-  constructor(
-    private readonly paymentsService: PaymentsService,
-    private readonly paypalService: PaypalService,
-  ) {}
+  constructor(private readonly paymentsService: PaymentsService) {}
 
   @Post()
   @Auth()
@@ -34,6 +30,6 @@ export class PaymentsController {
 
   @Delete()
   async remove() {
-    return await this.paypalService.create();
+    return 'hola';
   }
 }

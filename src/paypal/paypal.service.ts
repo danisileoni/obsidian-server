@@ -1,6 +1,14 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import axiosPaypal from 'src/common/interceptor/axios.interceptor';
 import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
+import axios from 'axios';
+
+import {
+  type ConvertAmount,
+  type Item,
+  type CancelOrder,
   type PaypalCaptureResponse,
   type PaypalQuery,
   type PaypalResponse,
@@ -8,21 +16,52 @@ import {
 
 @Injectable()
 export class PaypalService {
+  // TODO: ARREGLA ESTA PORONGA
   private readonly HOST: string;
+  private readonly API_CLIENT: string;
+  private readonly API_SECRET: string;
+  private readonly API_URL: string;
 
   constructor() {
     this.HOST = process.env.HOST;
+    this.API_CLIENT = process.env.API_CLIENT_PAYPAL;
+    this.API_SECRET = process.env.API_SECRET_PAYPAL;
+    this.API_URL = process.env.API_URL_PAYPAL;
   }
 
-  async create(): Promise<PaypalResponse> {
-    // pass to args
+  async create({
+    amount,
+    items,
+  }: {
+    amount: number;
+    items: Item[];
+  }): Promise<PaypalResponse> {
+    const convertUSD = await this.convertUSD(amount, items);
+
     const body = {
       intent: 'CAPTURE',
       purchase_units: [
         {
+          items: convertUSD.amountUnitsConvert.map((item) => {
+            return {
+              name: item.title,
+              description: item.description,
+              quantity: item.quantity,
+              unit_amount: {
+                currency_code: 'USD',
+                value: item.amount,
+              },
+            };
+          }),
           amount: {
             currency_code: 'USD',
-            value: `120`,
+            value: convertUSD.amountConvert,
+            breakdown: {
+              item_total: {
+                currency_code: 'USD',
+                value: convertUSD.amountConvert,
+              },
+            },
           },
         },
       ],
@@ -40,17 +79,30 @@ export class PaypalService {
 
     const {
       data: { access_token },
-    } = await axiosPaypal.post('/v1/oauth2/token', params);
+    } = await axios
+      .post(`${this.API_URL}/v1/oauth2/token`, params, {
+        auth: {
+          username: this.API_CLIENT,
+          password: this.API_SECRET,
+        },
+      })
+      .catch((error) => {
+        console.log(error);
+        throw new InternalServerErrorException('Check logs server');
+      });
 
-    const response = await axiosPaypal
-      .post('/v2/checkout/orders', body, {
+    const response = await axios
+      .post(`${this.API_URL}/v2/checkout/orders`, body, {
         headers: {
           Authorization: `Bearer ${access_token}`,
         },
       })
       .catch((error) => {
+        console.log(error);
         throw new BadRequestException(error);
       });
+
+    console.log(response.data);
 
     return response.data;
   }
@@ -58,8 +110,20 @@ export class PaypalService {
   async captureOrder(query: PaypalQuery): Promise<PaypalCaptureResponse> {
     const { token } = query;
 
-    const response = await axiosPaypal
-      .post(`/v2/checkout/orders/${token}/capture`, {})
+    const response = await axios
+      .post(
+        `${this.API_URL}/v2/checkout/orders/${token}/capture`,
+        {},
+        {
+          headers: {
+            Prefer: 'return=representation',
+          },
+          auth: {
+            username: this.API_CLIENT,
+            password: this.API_SECRET,
+          },
+        },
+      )
       .catch((error) => {
         throw new BadRequestException(error);
       });
@@ -67,10 +131,26 @@ export class PaypalService {
     return response.data;
   }
 
-  async cancelOrder(): Promise<object> {
+  cancelOrder(): CancelOrder {
     return {
       ok: true,
       message: 'Cancel order',
+    };
+  }
+
+  private async convertUSD(amount, items: Item[]): Promise<ConvertAmount> {
+    const response = await axios.get('https://dolarapi.com/v1/dolares/oficial');
+
+    const amountConvert = amount / response.data.venta;
+
+    const amountUnitsConvert = items.map((item) => {
+      item.amount = item.amount / response.data.venta;
+      return item;
+    });
+
+    return {
+      amountConvert,
+      amountUnitsConvert,
     };
   }
 }

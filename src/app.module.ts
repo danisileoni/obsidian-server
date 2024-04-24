@@ -19,7 +19,7 @@ import { PaypalModule } from './paypal/paypal.module';
 @Module({
   imports: [
     MulterModule.register({ storage: memoryStorage }),
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     TypeOrmModule.forRoot({
       type: 'postgres',
       port: +process.env.PORT_DB,

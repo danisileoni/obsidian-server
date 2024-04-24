@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { PaypalService } from './paypal.service';
-import { PaypalQuery, type PaypalResponse } from 'src/types';
+import { CancelOrder, PaypalQuery, type PaypalResponse } from 'src/types';
 
 @Controller('paypal')
 export class PaypalController {
@@ -12,7 +12,7 @@ export class PaypalController {
   }
 
   @Get('cancel-order')
-  cancelOrder() {
+  cancelOrder(): CancelOrder {
     return this.paypalService.cancelOrder();
   }
 }

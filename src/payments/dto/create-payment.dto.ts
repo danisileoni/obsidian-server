@@ -1,29 +1,24 @@
-import { IsNumber, IsString } from 'class-validator';
+import { IsEmail, IsNumber, IsObject, IsString } from 'class-validator';
+import { type Item } from 'src/types';
 
 export class CreatePaymentDto {
   @IsString()
   token: string;
 
-  @IsString()
-  title: string;
+  @IsObject({ each: true })
+  items: Item[];
 
-  @IsString()
-  description: string;
-
-  @IsNumber()
-  amount: number;
-
-  @IsString()
+  @IsEmail()
   email: string;
 
   @IsString()
   method: string;
 
-  @IsNumber()
-  quantity: number;
-
   @IsString()
   type: string;
+
+  @IsNumber()
+  amount: number;
 
   @IsString()
   numbers: string;

@@ -1,11 +1,9 @@
 export interface MercadoPagoArs {
   token: string;
-  title: string;
-  description: string;
+  items: Item[];
   amount: number;
   email: string;
   method: string;
-  quantity: number;
   type: string;
   numbers: string;
 }
@@ -118,4 +116,34 @@ export interface ShippingAddress {
 
 export interface ShippingName {
   full_name: string;
+}
+
+export interface CancelOrder {
+  ok: boolean;
+  message: string;
+}
+
+export interface ItemPaypal {
+  name: string;
+  description: string;
+  quantity: number;
+  unit_amount: UnitAmount;
+}
+
+export interface UnitAmount {
+  currency_code: string;
+  value: number;
+}
+
+export interface ConvertAmount {
+  amountConvert: number;
+  amountUnitsConvert: Item[];
+}
+
+// Global Payment
+export interface Item {
+  title: string;
+  description: string;
+  quantity: number;
+  amount: number;
 }
