@@ -7,10 +7,10 @@ export class Payment {
   id: string;
 
   // TODO: change a string or transform
-  @Column('numeric', {
+  @Column('text', {
     nullable: false,
   })
-  idPayment: number;
+  idPayment: string;
 
   @Column('text', {
     nullable: false,

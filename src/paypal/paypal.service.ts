@@ -29,15 +29,17 @@ export class PaypalService {
     this.API_URL = process.env.API_URL_PAYPAL;
   }
 
-  async create({
-    amount,
-    items,
-  }: {
-    amount: number;
-    items: Item[];
-  }): Promise<PaypalResponse> {
+  async create(
+    {
+      amount,
+      items,
+    }: {
+      amount: number;
+      items: Item[];
+    },
+    userId: string,
+  ): Promise<PaypalResponse> {
     const convertUSD = await this.convertUSD(amount, items);
-
     const body = {
       intent: 'CAPTURE',
       purchase_units: [
@@ -69,7 +71,7 @@ export class PaypalService {
         brand_name: 'obsidiandigitales.com',
         landing_page: 'NO_PREFERENCE',
         user_action: 'PAY_NOW',
-        return_url: `${this.HOST}/paypal/capture-order`,
+        return_url: `${this.HOST}/payments/capture-order/${userId}`,
         cancel_url: `${this.HOST}/paypal/cancel-order`,
       },
     };
@@ -101,8 +103,6 @@ export class PaypalService {
         console.log(error);
         throw new BadRequestException(error);
       });
-
-    console.log(response.data);
 
     return response.data;
   }
@@ -139,18 +139,25 @@ export class PaypalService {
   }
 
   private async convertUSD(amount, items: Item[]): Promise<ConvertAmount> {
-    const response = await axios.get('https://dolarapi.com/v1/dolares/oficial');
+    try {
+      const { data } = await axios.get(
+        'https://dolarapi.com/v1/dolares/oficial',
+      );
 
-    const amountConvert = amount / response.data.venta;
+      const amountConvert = parseFloat((amount / data.venta).toFixed(2));
 
-    const amountUnitsConvert = items.map((item) => {
-      item.amount = item.amount / response.data.venta;
-      return item;
-    });
+      const amountUnitsConvert = items.map((item) => {
+        item.amount = parseFloat((item.amount / data.venta).toFixed(2));
+        return item;
+      });
 
-    return {
-      amountConvert,
-      amountUnitsConvert,
-    };
+      return {
+        amountConvert,
+        amountUnitsConvert,
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Check logs server');
+    }
   }
 }

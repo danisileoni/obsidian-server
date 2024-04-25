@@ -33,33 +33,31 @@ export class PaymentsService {
   ): Promise<CreatePaymentDto | PaymentResponse | PaypalResponse> {
     let order: CreatePaymentDto | PaymentResponse | PaypalResponse;
     const { paymentGateway } = createPaymentDto;
+    let shoppingAssignedUser: User;
 
     if (!paymentGateway) {
       throw new BadRequestException('Property not found in body');
     }
 
-    const shoppingAssignedUser = await this.userRepository.findOne({
-      where: { id: user.id },
-      relations: ['shopping'],
-    });
-    if (!shoppingAssignedUser) {
-      throw new NotFoundException(`User not found with id: ${user.id}`);
-    }
-
     if (paymentGateway === 'mercadopago') {
+      shoppingAssignedUser = await this.userRepository.findOne({
+        where: { id: user.id },
+        relations: ['shopping'],
+      });
+      if (!shoppingAssignedUser) {
+        throw new NotFoundException(`User not found with id: ${user.id}`);
+      }
       order = await this.mercadoPago(createPaymentDto, shoppingAssignedUser);
+
+      await this.userRepository.save(shoppingAssignedUser).catch((error) => {
+        console.log(error);
+        throw new InternalServerErrorException('Check logs server');
+      });
     }
 
     if (paymentGateway === 'paypal') {
-      order = await this.paypal(createPaymentDto);
+      order = await this.paypal(createPaymentDto, user.id);
     }
-
-    console.log({ shoppingAssignedUser });
-
-    await this.userRepository.save(shoppingAssignedUser).catch((error) => {
-      console.log(error);
-      throw new InternalServerErrorException('Check logs server');
-    });
 
     return order;
   }
@@ -71,9 +69,9 @@ export class PaymentsService {
     return await this.mercadopagoService.searchOrder(id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} payment`;
-  }
+  // remove(id: number) {
+  //   return `This action removes a #${id} payment`;
+  // }
 
   private async mercadoPago(
     data: CreatePaymentDto,
@@ -90,7 +88,7 @@ export class PaymentsService {
     shoppingAssignedUser.shopping.push(
       ...order.additional_info.items.map((item) => {
         return this.paymentRepository.create({
-          idPayment: order.id,
+          idPayment: order.id.toString(),
           email: order.payer.email,
           nameProduct: item.title,
           paymentGateway: data.paymentGateway,
@@ -101,25 +99,44 @@ export class PaymentsService {
     return order;
   }
 
-  public async paypalCapture(
-    data: PaypalCaptureResponse,
-    shoppingAssignedUser: User,
-  ) {
+  public async paypalCapture(order: PaypalCaptureResponse, id: string) {
+    const shoppingAssignedUser = await this.userRepository.findOne({
+      where: { id },
+      relations: ['shopping'],
+    });
+    if (!shoppingAssignedUser) {
+      throw new NotFoundException(`User not found with id: ${id}`);
+    }
+
     shoppingAssignedUser.shopping.push(
-      ...this.paymentRepository.create({
-        idPayment: order.id,
-        email: order.payer.email,
-        nameProduct: item.title,
-        paymentGateway: data.paymentGateway,
+      ...order.purchase_units[0].items.map((item) => {
+        return this.paymentRepository.create({
+          idPayment: order.id,
+          email: order.payer.email_address,
+          nameProduct: item.name,
+          paymentGateway: 'paypal',
+        });
       }),
     );
-  }
 
-  private async paypal(data: CreatePaymentDto): Promise<PaypalResponse> {
-    const order = await this.paypalService.create(data).catch((error) => {
+    await this.userRepository.save(shoppingAssignedUser).catch((error) => {
       console.log(error);
       throw new InternalServerErrorException('Check logs server');
     });
+
+    return order;
+  }
+
+  private async paypal(
+    data: CreatePaymentDto,
+    userId: string,
+  ): Promise<PaypalResponse> {
+    const order = await this.paypalService
+      .create(data, userId)
+      .catch((error) => {
+        console.log(error);
+        throw new InternalServerErrorException('Check logs server');
+      });
 
     return order;
   }

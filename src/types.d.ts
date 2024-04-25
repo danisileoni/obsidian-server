@@ -28,10 +28,13 @@ export interface Link {
 
 export interface PaypalCaptureResponse {
   id: string;
+  intent: string;
   status: string;
   payment_source: PaymentSource;
   purchase_units: PurchaseUnit[];
   payer: Payer;
+  create_time: Date;
+  update_time: Date;
   links: Link[];
 }
 
@@ -65,8 +68,48 @@ export interface Paypal {
 
 export interface PurchaseUnit {
   reference_id: string;
+  amount: Amount;
+  payee: Payee;
+  description: string;
+  items: Items[];
   shipping: Shipping;
   payments: Payments;
+}
+
+export interface Amount {
+  currency_code: CurrencyCode;
+  value: string;
+  breakdown: Breakdown;
+}
+
+export interface Breakdown {
+  item_total: Handling;
+  shipping: Handling;
+  handling: Handling;
+  insurance: Handling;
+  shipping_discount: Handling;
+}
+
+export interface Handling {
+  currency_code: CurrencyCode;
+  value: string;
+}
+
+export enum CurrencyCode {
+  Usd = 'USD',
+}
+
+export interface Items {
+  name: string;
+  unit_amount: Handling;
+  tax: Handling;
+  quantity: string;
+  description: string;
+}
+
+export interface Payee {
+  email_address: string;
+  merchant_id: string;
 }
 
 export interface Payments {
@@ -76,7 +119,7 @@ export interface Payments {
 export interface Capture {
   id: string;
   status: string;
-  amount: Amount;
+  amount: Handling;
   final_capture: boolean;
   seller_protection: SellerProtection;
   seller_receivable_breakdown: SellerReceivableBreakdown;
@@ -85,20 +128,15 @@ export interface Capture {
   update_time: Date;
 }
 
-export interface Amount {
-  currency_code: string;
-  value: string;
-}
-
 export interface SellerProtection {
   status: string;
   dispute_categories: string[];
 }
 
 export interface SellerReceivableBreakdown {
-  gross_amount: Amount;
-  paypal_fee: Amount;
-  net_amount: Amount;
+  gross_amount: Handling;
+  paypal_fee: Handling;
+  net_amount: Handling;
 }
 
 export interface Shipping {
