@@ -16,7 +16,11 @@ import { Auth } from 'src/auth/decorators/auth.decorator';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 import { PaymentMethodDto } from './dto/payment-method.dto';
 import { PaypalService } from 'src/paypal/paypal.service';
-import { PaypalQuery, type PaypalResponse } from 'src/types';
+import {
+  PaypalCaptureResponse,
+  PaypalQuery,
+  type PaypalResponse,
+} from 'src/types';
 
 @Controller('payments')
 export class PaymentsController {
@@ -38,10 +42,10 @@ export class PaymentsController {
   async captureOrder(
     @Query() query: PaypalQuery,
     @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<PaypalResponse> {
+  ) {
     const captureOrder = await this.paypalService.captureOrder(query);
 
-    return await this.paymentsService.paypalCapture(captureOrder, id);
+    return await this.paymentsService.assignedNewOrders(id, captureOrder);
   }
 
   @Get(':id')

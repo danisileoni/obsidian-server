@@ -13,7 +13,12 @@ import { Payment } from './entities/payment.entity';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 import { type PaymentMethodDto } from './dto/payment-method.dto';
 import { PaypalService } from 'src/paypal/paypal.service';
-import { type PaypalCaptureResponse, type PaypalResponse } from 'src/types';
+import {
+  TypeOrder,
+  type PaypalCaptureResponse,
+  type PaypalResponse,
+} from 'src/types';
+import { isOrderPaypalCapture } from 'src/common/helpers/isOrederPaypal.helper';
 
 @Injectable()
 export class PaymentsService {
@@ -40,19 +45,13 @@ export class PaymentsService {
     }
 
     if (paymentGateway === 'mercadopago') {
-      shoppingAssignedUser = await this.userRepository.findOne({
-        where: { id: user.id },
-        relations: ['shopping'],
-      });
-      if (!shoppingAssignedUser) {
-        throw new NotFoundException(`User not found with id: ${user.id}`);
-      }
-      order = await this.mercadoPago(createPaymentDto, shoppingAssignedUser);
+      order = await this.mercadopagoService
+        .createOrder(createPaymentDto)
+        .catch((error) => {
+          throw new BadRequestException(error);
+        });
 
-      await this.userRepository.save(shoppingAssignedUser).catch((error) => {
-        console.log(error);
-        throw new InternalServerErrorException('Check logs server');
-      });
+      return await this.assignedNewOrders(user.id, order);
     }
 
     if (paymentGateway === 'paypal') {
@@ -69,64 +68,6 @@ export class PaymentsService {
     return await this.mercadopagoService.searchOrder(id);
   }
 
-  // remove(id: number) {
-  //   return `This action removes a #${id} payment`;
-  // }
-
-  private async mercadoPago(
-    data: CreatePaymentDto,
-    shoppingAssignedUser: User,
-  ): Promise<PaymentResponse> {
-    console.log(data);
-
-    const order = await this.mercadopagoService
-      .createOrder(data)
-      .catch((error) => {
-        throw new BadRequestException(error);
-      });
-
-    shoppingAssignedUser.shopping.push(
-      ...order.additional_info.items.map((item) => {
-        return this.paymentRepository.create({
-          idPayment: order.id.toString(),
-          email: order.payer.email,
-          nameProduct: item.title,
-          paymentGateway: data.paymentGateway,
-        });
-      }),
-    );
-
-    return order;
-  }
-
-  public async paypalCapture(order: PaypalCaptureResponse, id: string) {
-    const shoppingAssignedUser = await this.userRepository.findOne({
-      where: { id },
-      relations: ['shopping'],
-    });
-    if (!shoppingAssignedUser) {
-      throw new NotFoundException(`User not found with id: ${id}`);
-    }
-
-    shoppingAssignedUser.shopping.push(
-      ...order.purchase_units[0].items.map((item) => {
-        return this.paymentRepository.create({
-          idPayment: order.id,
-          email: order.payer.email_address,
-          nameProduct: item.name,
-          paymentGateway: 'paypal',
-        });
-      }),
-    );
-
-    await this.userRepository.save(shoppingAssignedUser).catch((error) => {
-      console.log(error);
-      throw new InternalServerErrorException('Check logs server');
-    });
-
-    return order;
-  }
-
   private async paypal(
     data: CreatePaymentDto,
     userId: string,
@@ -137,6 +78,61 @@ export class PaymentsService {
         console.log(error);
         throw new InternalServerErrorException('Check logs server');
       });
+
+    return order;
+  }
+
+  public async assignedNewOrders(
+    idUser: string,
+    order: PaypalCaptureResponse | PaymentResponse,
+  ): Promise<PaypalCaptureResponse | PaymentResponse> {
+    let typeOrder: TypeOrder;
+
+    const shoppingAssignedUser = await this.userRepository.findOne({
+      where: { id: idUser },
+      relations: ['shopping'],
+    });
+    if (!shoppingAssignedUser) {
+      throw new NotFoundException(`User not found with id: ${idUser}`);
+    }
+
+    if (isOrderPaypalCapture(order)) {
+      typeOrder = {
+        id: order.id,
+        items: order.purchase_units[0].items,
+        payer: {
+          email: order.payer.email_address,
+        },
+        paymentGateway: 'paypal',
+      };
+    } else {
+      typeOrder = {
+        id: order.id,
+        items: order.additional_info.items,
+        payer: {
+          email: order.payer.email,
+        },
+        paymentGateway: 'mercadopago',
+      };
+    }
+
+    console.log(typeOrder);
+
+    shoppingAssignedUser.shopping.push(
+      ...typeOrder.items.map((item) => {
+        return this.paymentRepository.create({
+          idPayment: typeOrder.id.toString(),
+          email: typeOrder.payer.email,
+          nameProduct: item.name ?? item.title,
+          paymentGateway: typeOrder.paymentGateway,
+        });
+      }),
+    );
+
+    await this.userRepository.save(shoppingAssignedUser).catch((error) => {
+      console.log(error);
+      throw new InternalServerErrorException('Check logs server');
+    });
 
     return order;
   }

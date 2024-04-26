@@ -71,7 +71,7 @@ export interface PurchaseUnit {
   amount: Amount;
   payee: Payee;
   description: string;
-  items: Items[];
+  items: ItemPaypal[];
   shipping: Shipping;
   payments: Payments;
 }
@@ -99,7 +99,7 @@ export enum CurrencyCode {
   Usd = 'USD',
 }
 
-export interface Items {
+export interface ItemPaypal {
   name: string;
   unit_amount: Handling;
   tax: Handling;
@@ -161,13 +161,6 @@ export interface CancelOrder {
   message: string;
 }
 
-export interface ItemPaypal {
-  name: string;
-  description: string;
-  quantity: number;
-  unit_amount: UnitAmount;
-}
-
 export interface UnitAmount {
   currency_code: string;
   value: number;
@@ -184,4 +177,21 @@ export interface Item {
   description: string;
   quantity: number;
   amount: number;
+}
+
+interface TypeOrder {
+  id: string | number;
+  items: ItemMP[] | ItemPaypal[];
+  payer: { email: string };
+  paymentGateway: string;
+}
+
+export interface ItemMP {
+  id: string;
+  title: string;
+  description: string;
+  picture_url: null;
+  category_id: string;
+  quantity: string;
+  unit_price: string;
 }

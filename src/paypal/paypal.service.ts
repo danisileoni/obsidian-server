@@ -138,7 +138,10 @@ export class PaypalService {
     };
   }
 
-  private async convertUSD(amount, items: Item[]): Promise<ConvertAmount> {
+  private async convertUSD(
+    amount: number,
+    items: Item[],
+  ): Promise<ConvertAmount> {
     try {
       const { data } = await axios.get(
         'https://dolarapi.com/v1/dolares/oficial',
