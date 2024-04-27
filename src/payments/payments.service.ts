@@ -14,11 +14,12 @@ import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTyp
 import { type PaymentMethodDto } from './dto/payment-method.dto';
 import { PaypalService } from 'src/paypal/paypal.service';
 import {
-  TypeOrder,
+  type TypeOrder,
   type PaypalCaptureResponse,
   type PaypalResponse,
+  type MercadoPagoResponse,
 } from 'src/types';
-import { isOrderPaypalCapture } from 'src/common/helpers/isOrederPaypal.helper';
+import { isOrderPaypalCapture } from 'src/common/helpers/isOrderPaypal.helper';
 
 @Injectable()
 export class PaymentsService {
@@ -35,10 +36,9 @@ export class PaymentsService {
   async create(
     createPaymentDto: CreatePaymentDto,
     user: User,
-  ): Promise<CreatePaymentDto | PaymentResponse | PaypalResponse> {
+  ): Promise<CreatePaymentDto | MercadoPagoResponse | PaypalResponse> {
     let order: CreatePaymentDto | PaymentResponse | PaypalResponse;
     const { paymentGateway } = createPaymentDto;
-    let shoppingAssignedUser: User;
 
     if (!paymentGateway) {
       throw new BadRequestException('Property not found in body');
@@ -84,7 +84,7 @@ export class PaymentsService {
 
   public async assignedNewOrders(
     idUser: string,
-    order: PaypalCaptureResponse | PaymentResponse,
+    order: PaypalCaptureResponse | MercadoPagoResponse,
   ): Promise<PaypalCaptureResponse | PaymentResponse> {
     let typeOrder: TypeOrder;
 
