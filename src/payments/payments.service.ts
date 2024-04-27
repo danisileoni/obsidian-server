@@ -17,7 +17,6 @@ import {
   type TypeOrder,
   type PaypalCaptureResponse,
   type PaypalResponse,
-  type MercadoPagoResponse,
 } from 'src/types';
 import { isOrderPaypalCapture } from 'src/common/helpers/isOrderPaypal.helper';
 
@@ -36,8 +35,8 @@ export class PaymentsService {
   async create(
     createPaymentDto: CreatePaymentDto,
     user: User,
-  ): Promise<CreatePaymentDto | MercadoPagoResponse | PaypalResponse> {
-    let order: CreatePaymentDto | PaymentResponse | PaypalResponse;
+  ): Promise<PaymentResponse | PaypalResponse> {
+    let order: PaymentResponse | PaypalResponse;
     const { paymentGateway } = createPaymentDto;
 
     if (!paymentGateway) {
@@ -84,7 +83,7 @@ export class PaymentsService {
 
   public async assignedNewOrders(
     idUser: string,
-    order: PaypalCaptureResponse | MercadoPagoResponse,
+    order: PaypalCaptureResponse | PaymentResponse,
   ): Promise<PaypalCaptureResponse | PaymentResponse> {
     let typeOrder: TypeOrder;
 
@@ -119,7 +118,7 @@ export class PaymentsService {
     console.log(typeOrder);
 
     shoppingAssignedUser.shopping.push(
-      ...typeOrder.items.map((item) => {
+      ...typeOrder.items.map((item: any) => {
         return this.paymentRepository.create({
           idPayment: typeOrder.id.toString(),
           email: typeOrder.payer.email,

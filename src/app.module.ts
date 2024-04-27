@@ -15,6 +15,7 @@ import { AccountsModule } from './accounts/accounts.module';
 import { PaymentsModule } from './payments/payments.module';
 import { MercadopagoModule } from './mercadopago/mercadopago.module';
 import { PaypalModule } from './paypal/paypal.module';
+import { CryptomusModule } from './cryptomus/cryptomus.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { PaypalModule } from './paypal/paypal.module';
     PaymentsModule,
     MercadopagoModule,
     PaypalModule,
+    CryptomusModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],
