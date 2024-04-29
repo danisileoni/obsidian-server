@@ -27,6 +27,14 @@ export class AccountsController {
     return await this.accountsService.findOne(id);
   }
 
+  @Get('stock/:id')
+  async stock(@Param('id', ParseUUIDPipe) id: string): Promise<{
+    quantityPrimary: number;
+    quantitySecondary: number;
+  }> {
+    return await this.accountsService.stock(id);
+  }
+
   @Patch(':id')
   async update(
     @Param('id', ParseUUIDPipe) id: string,

@@ -3,7 +3,7 @@ import {
   Column,
   Entity,
   PrimaryGeneratedColumn,
-  OneToOne,
+  ManyToOne,
   JoinColumn,
 } from 'typeorm';
 
@@ -11,6 +11,12 @@ import {
 export class Account {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Column('numeric')
+  quantityPrimary: number;
+
+  @Column('numeric')
+  quantitySecondary: number;
 
   @Column('text', {
     unique: true,
@@ -23,7 +29,7 @@ export class Account {
   })
   password: string;
 
-  @OneToOne(() => Product, {
+  @ManyToOne(() => Product, (product) => product.account, {
     onDelete: 'CASCADE',
   })
   @JoinColumn()

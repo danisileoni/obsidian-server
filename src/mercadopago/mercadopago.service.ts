@@ -11,10 +11,14 @@ import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class MercadopagoService {
+  private readonly HOST: string;
+
   constructor(
     @Inject('MERCADO_PAGO')
     private readonly payment: Payment,
-  ) {}
+  ) {
+    this.HOST = process.env.HOST;
+  }
 
   async createOrder({
     token,
@@ -57,6 +61,7 @@ export class MercadopagoService {
 
       return order;
     } catch (error) {
+      console.log(error);
       throw new BadRequestException(error);
     }
   }

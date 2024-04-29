@@ -24,18 +24,29 @@ export class AccountsService {
   ) {}
 
   async create(createAccountDto: CreateAccountDto): Promise<object> {
-    const { idProduct: id, email, password } = createAccountDto;
+    const {
+      idProduct: id,
+      email,
+      password,
+      quantityPrimary,
+      quantitySecondary,
+    } = createAccountDto;
 
-    const accountProduct = await this.productRepository.preload({
-      id,
-      account: this.accountRepository.create({
-        email: this.getCrypto(email),
-        password: this.getCrypto(password),
-      }),
-    });
+    const accountProduct = await this.productRepository.findOneBy({ id });
     if (!accountProduct) {
       throw new NotFoundException(`Product not found with id: ${id}`);
     }
+    accountProduct.account = [
+      ...accountProduct.account,
+      this.accountRepository.create({
+        email: this.getCrypto(email),
+        password: this.getCrypto(password),
+        quantityPrimary,
+        quantitySecondary,
+      }),
+    ];
+
+    console.log(accountProduct);
     try {
       await this.productRepository.save(accountProduct);
       return {
@@ -47,14 +58,49 @@ export class AccountsService {
     }
   }
 
+  async stock(
+    id: string,
+  ): Promise<{ quantityPrimary: number; quantitySecondary: number }> {
+    const accounts = await this.accountRepository.find({
+      where: {
+        product: {
+          id,
+        },
+      },
+    });
+
+    let stock: { quantityPrimary: number; quantitySecondary: number };
+
+    const accountFilterPS = accounts.filter(
+      (account) => account.quantityPrimary && account.quantitySecondary,
+    );
+
+    if (accountFilterPS) {
+      stock = accounts.reduce(
+        (acc, obj) => {
+          return {
+            quantityPrimary: +acc.quantityPrimary + +obj.quantityPrimary,
+            quantitySecondary: +acc.quantitySecondary + +obj.quantitySecondary,
+          };
+        },
+        { quantityPrimary: 0, quantitySecondary: 0 },
+      );
+    } else {
+      stock = {
+        quantityPrimary: 0,
+        quantitySecondary: 0,
+      };
+    }
+
+    return stock;
+  }
+
   async findOne(id: string): Promise<Account> {
     const account = await this.accountRepository.findOneBy({ id });
 
     if (!account) {
       throw new NotFoundException('Account not found');
     }
-
-    console.log(crypto.randomBytes(32).toString('hex'));
 
     return account;
   }

@@ -38,8 +38,8 @@ export class PaymentsController {
     return await this.paymentsService.create(createPaymentDto, user);
   }
 
-  @Get('capture-order/:id')
-  async captureOrder(
+  @Get('capture-order-pp/:id')
+  async captureOrderPaypal(
     @Query() query: PaypalQuery,
     @Param('id', ParseUUIDPipe) id: string,
   ) {
@@ -47,6 +47,14 @@ export class PaymentsController {
 
     return await this.paymentsService.assignedNewOrders(id, captureOrder);
   }
+
+  // @Post('capture-order-mp')
+  // async captureOrderMP(
+  //   @Query() query: PaypalQuery,
+  //   @Param('id', ParseUUIDPipe) id: string,
+  // ) {
+  //   console.log(query);
+  // }
 
   @Get(':id')
   async findOne(
