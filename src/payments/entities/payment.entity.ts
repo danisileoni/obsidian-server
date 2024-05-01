@@ -1,3 +1,4 @@
+import { Account } from 'src/accounts/entities/account.entity';
 import { User } from 'src/users/entities/user.entity';
 import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 
@@ -35,4 +36,7 @@ export class Payment {
 
   @ManyToOne(() => User, (user) => user.shopping)
   user: User;
+
+  @ManyToOne(() => Account, (account) => account.payment)
+  account: Account;
 }

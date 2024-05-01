@@ -1,3 +1,4 @@
+import { Payment } from 'src/payments/entities/payment.entity';
 import { Product } from 'src/products/entities';
 import {
   Column,
@@ -5,6 +6,7 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 
 @Entity()
@@ -34,4 +36,7 @@ export class Account {
   })
   @JoinColumn()
   product: Product;
+
+  @OneToMany(() => Payment, (payment) => payment.account)
+  payment: Payment[];
 }

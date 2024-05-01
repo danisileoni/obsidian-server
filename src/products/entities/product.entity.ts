@@ -4,10 +4,12 @@ import {
   Column,
   Entity,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ProductImage } from './';
 import { Account } from 'src/accounts/entities/account.entity';
+import { Sale } from 'src/sales/entities/sale.entity';
 
 @Entity()
 export class Product {
@@ -65,6 +67,12 @@ export class Product {
     eager: true,
   })
   account: Account[];
+
+  @OneToOne(() => Sale, (sale) => sale.product, {
+    eager: true,
+    cascade: true,
+  })
+  sale: Sale;
 
   @BeforeInsert()
   checkSlugInsert(): void {

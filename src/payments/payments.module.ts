@@ -8,16 +8,19 @@ import { User } from 'src/users/entities/user.entity';
 import { PassportModule } from '@nestjs/passport';
 import { AuthModule } from 'src/auth/auth.module';
 import { PaypalModule } from 'src/paypal/paypal.module';
+import { AccountsModule } from 'src/accounts/accounts.module';
+import { Account } from 'src/accounts/entities/account.entity';
 
 @Module({
   controllers: [PaymentsController],
   providers: [PaymentsService],
   imports: [
-    TypeOrmModule.forFeature([Payment, User]),
+    TypeOrmModule.forFeature([Payment, User, Account]),
     MercadopagoModule,
     AuthModule,
     PassportModule,
     PaypalModule,
+    AccountsModule,
   ],
 })
 export class PaymentsModule {}

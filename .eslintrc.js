@@ -28,5 +28,6 @@ module.exports = {
     '@typescript-eslint/prefer-nullish-coalescing': 'off',
     '@typescript-eslint/strict-boolean-expressions': 'off',
     '@typescript-eslint/naming-convention': 'off',
+    '@typescript-eslint/no-misused-promises': 'off',
   },
 };

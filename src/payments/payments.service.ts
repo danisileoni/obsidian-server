@@ -19,6 +19,7 @@ import {
   type PaypalResponse,
 } from 'src/types';
 import { isOrderPaypalCapture } from 'src/common/helpers/isOrderPaypal.helper';
+import { Account } from 'src/accounts/entities/account.entity';
 
 @Injectable()
 export class PaymentsService {
@@ -27,6 +28,8 @@ export class PaymentsService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
+    @InjectRepository(Account)
+    private readonly accountRepository: Repository<Account>,
     private readonly mercadopagoService: MercadopagoService,
     private readonly paypalService: PaypalService,
   ) {}
@@ -114,8 +117,6 @@ export class PaymentsService {
         paymentGateway: 'mercadopago',
       };
     }
-
-    console.log(typeOrder);
 
     shoppingAssignedUser.shopping.push(
       ...typeOrder.items.map((item: any) => {
