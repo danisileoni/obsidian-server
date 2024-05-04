@@ -37,7 +37,7 @@ export class PaypalService {
       amount: number;
       items: Item[];
     },
-    userId: string,
+    orderId: string,
   ): Promise<PaypalResponse> {
     const convertUSD = await this.convertUSD(amount, items);
     const body = {
@@ -71,7 +71,7 @@ export class PaypalService {
         brand_name: 'obsidiandigitales.com',
         landing_page: 'NO_PREFERENCE',
         user_action: 'PAY_NOW',
-        return_url: `${this.HOST}/payments/capture-order-pp/${userId}`,
+        return_url: `${this.HOST}/payments/capture-order-pp/${orderId}`,
         cancel_url: `${this.HOST}/paypal/cancel-order`,
       },
     };

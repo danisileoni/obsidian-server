@@ -10,6 +10,7 @@ import {
 import { ProductImage } from './';
 import { Account } from 'src/accounts/entities/account.entity';
 import { Sale } from 'src/sales/entities/sale.entity';
+import { OrdersDetails } from 'src/orders/entities/orders-details.entity';
 
 @Entity()
 export class Product {
@@ -73,6 +74,9 @@ export class Product {
     cascade: true,
   })
   sale: Sale;
+
+  @OneToMany(() => OrdersDetails, (product) => product.product)
+  ordersDetails: OrdersDetails;
 
   @BeforeInsert()
   checkSlugInsert(): void {

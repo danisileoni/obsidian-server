@@ -1,4 +1,4 @@
-import { Payment } from 'src/payments/entities/payment.entity';
+import { Order } from '../../orders/entities/order.entity';
 import {
   BeforeInsert,
   BeforeUpdate,
@@ -53,11 +53,8 @@ export class User {
   })
   isActive: boolean;
 
-  @OneToMany(() => Payment, (payment) => payment.user, {
-    cascade: true,
-    eager: true,
-  })
-  shopping: Payment[];
+  @OneToMany(() => Order, (order) => order.user)
+  orders: Order[];
 
   @BeforeInsert()
   checkFieldsBeforeInsert(): void {

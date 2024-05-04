@@ -1,6 +1,12 @@
 import { Account } from 'src/accounts/entities/account.entity';
-import { User } from 'src/users/entities/user.entity';
-import { Column, Entity, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
+import { Order } from 'src/orders/entities/order.entity';
+import {
+  Column,
+  Entity,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  OneToOne,
+} from 'typeorm';
 
 @Entity()
 export class Payment {
@@ -34,9 +40,9 @@ export class Payment {
   })
   paymentGateway: string;
 
-  @ManyToOne(() => User, (user) => user.shopping)
-  user: User;
-
   @ManyToOne(() => Account, (account) => account.payment)
   account: Account;
+
+  @OneToOne(() => Order, (order) => order.payment)
+  order: Order;
 }

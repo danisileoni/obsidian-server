@@ -16,6 +16,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { MercadopagoModule } from './mercadopago/mercadopago.module';
 import { PaypalModule } from './paypal/paypal.module';
 import { SalesModule } from './sales/sales.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { SalesModule } from './sales/sales.module';
     MercadopagoModule,
     PaypalModule,
     SalesModule,
+    OrdersModule,
   ],
   controllers: [AuthController],
   providers: [AuthService],

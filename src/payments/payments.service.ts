@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { type CreatePaymentDto } from './dto/create-payment.dto';
 import { MercadopagoService } from '../mercadopago/mercadopago.service';
-import { User } from 'src/users/entities/user.entity';
+import { type User } from 'src/users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Payment } from './entities/payment.entity';
@@ -20,16 +20,17 @@ import {
 } from 'src/types';
 import { isOrderPaypalCapture } from 'src/common/helpers/isOrderPaypal.helper';
 import { Account } from 'src/accounts/entities/account.entity';
+import { Order } from 'src/orders/entities/order.entity';
 
 @Injectable()
 export class PaymentsService {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-    @InjectRepository(Payment)
-    private readonly paymentRepository: Repository<Payment>,
     @InjectRepository(Account)
     private readonly accountRepository: Repository<Account>,
+    @InjectRepository(Payment)
+    private readonly paymentRepository: Repository<Payment>,
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
     private readonly mercadopagoService: MercadopagoService,
     private readonly paypalService: PaypalService,
   ) {}
@@ -85,17 +86,14 @@ export class PaymentsService {
   }
 
   public async assignedNewOrders(
-    idUser: string,
+    idOrder: string,
     order: PaypalCaptureResponse | PaymentResponse,
   ): Promise<PaypalCaptureResponse | PaymentResponse> {
     let typeOrder: TypeOrder;
 
-    const shoppingAssignedUser = await this.userRepository.findOne({
-      where: { id: idUser },
-      relations: ['shopping'],
-    });
-    if (!shoppingAssignedUser) {
-      throw new NotFoundException(`User not found with id: ${idUser}`);
+    const orderToPaid = await this.orderRepository.findOneBy({ id: idOrder });
+    if (!orderToPaid) {
+      throw new NotFoundException(`Order not found with id: ${idOrder}`);
     }
 
     if (isOrderPaypalCapture(order)) {
@@ -118,21 +116,17 @@ export class PaymentsService {
       };
     }
 
-    shoppingAssignedUser.shopping.push(
-      ...typeOrder.items.map((item: any) => {
-        return this.paymentRepository.create({
-          idPayment: typeOrder.id.toString(),
-          email: typeOrder.payer.email,
-          nameProduct: item.name ?? item.title,
-          paymentGateway: typeOrder.paymentGateway,
-        });
-      }),
-    );
-
-    await this.userRepository.save(shoppingAssignedUser).catch((error) => {
-      console.log(error);
-      throw new InternalServerErrorException('Check logs server');
+    const payment = this.paymentRepository.create({
+      idPayment: typeOrder.id.toString(),
+      email: typeOrder.payer.email,
+      paymentGateway: typeOrder.paymentGateway,
+      order: orderToPaid,
     });
+
+    orderToPaid.paid = true;
+
+    await this.orderRepository.save(orderToPaid);
+    await this.paymentRepository.save(payment);
 
     return order;
   }
