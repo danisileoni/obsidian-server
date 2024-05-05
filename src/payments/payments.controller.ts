@@ -29,13 +29,13 @@ export class PaymentsController {
     private readonly paypalService: PaypalService,
   ) {}
 
-  @Post()
+  @Post('create/:id')
   @Auth()
   async create(
+    @Param('id', ParseUUIDPipe) idOrder: string,
     @Body() createPaymentDto: CreatePaymentDto,
-    @GetUser() user: User,
   ) {
-    return await this.paymentsService.create(createPaymentDto, user);
+    return await this.paymentsService.create(createPaymentDto, idOrder);
   }
 
   @Get('capture-order-pp/:id')
@@ -45,7 +45,7 @@ export class PaymentsController {
   ) {
     const captureOrder = await this.paypalService.captureOrder(query);
 
-    return await this.paymentsService.assignedNewOrders(id, captureOrder);
+    return await this.paymentsService.assignedNewPayment(id, captureOrder);
   }
 
   // @Post('capture-order-mp')

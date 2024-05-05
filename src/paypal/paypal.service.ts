@@ -40,6 +40,8 @@ export class PaypalService {
     orderId: string,
   ): Promise<PaypalResponse> {
     const convertUSD = await this.convertUSD(amount, items);
+
+    console.log(convertUSD);
     const body = {
       intent: 'CAPTURE',
       purchase_units: [
@@ -143,15 +145,23 @@ export class PaypalService {
     items: Item[],
   ): Promise<ConvertAmount> {
     try {
-      const { data } = await axios.get(
-        'https://dolarapi.com/v1/dolares/oficial',
-      );
-
-      const amountConvert = parseFloat((amount / data.venta).toFixed(2));
+      const { data } = await axios
+        .get('https://dolarapi.com/v1/dolares/oficial')
+        .catch((error) => {
+          console.log(error);
+          throw new InternalServerErrorException('Check logs server');
+        });
 
       const amountUnitsConvert = items.map((item) => {
         item.amount = parseFloat((item.amount / data.venta).toFixed(2));
         return item;
+      });
+
+      let amountConvert: number = 0;
+
+      amountUnitsConvert.forEach((amount) => {
+        console.log(amount);
+        amountConvert += amount.amount * amount.quantity;
       });
 
       return {

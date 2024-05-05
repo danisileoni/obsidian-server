@@ -12,12 +12,20 @@ import { Account } from 'src/accounts/entities/account.entity';
 import { ProductsModule } from 'src/products/products.module';
 import { Order } from 'src/orders/entities/order.entity';
 import { OrdersDetails } from 'src/orders/entities/orders-details.entity';
+import { AccountsPaid } from './entities/accounts-paid.entity';
 
 @Module({
   controllers: [PaymentsController],
   providers: [PaymentsService],
   imports: [
-    TypeOrmModule.forFeature([Payment, User, Account, Order, OrdersDetails]),
+    TypeOrmModule.forFeature([
+      Payment,
+      User,
+      Account,
+      Order,
+      OrdersDetails,
+      AccountsPaid,
+    ]),
     MercadopagoModule,
     AuthModule,
     PassportModule,

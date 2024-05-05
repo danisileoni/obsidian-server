@@ -16,7 +16,13 @@ export class Order {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('bool', {
+  @Column('text', {
+    nullable: false,
+    default: new Date(),
+  })
+  createAt: Date;
+
+  @Column('boolean', {
     default: false,
   })
   paid: boolean;
@@ -31,6 +37,7 @@ export class Order {
 
   @OneToMany(() => OrdersDetails, (details) => details.order, {
     eager: true,
+    cascade: true,
   })
   details: OrdersDetails[];
 }

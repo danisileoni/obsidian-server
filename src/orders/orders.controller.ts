@@ -11,7 +11,7 @@ import { ValidRoles } from 'src/auth/interfaces/valid-roles.enum';
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
-  @Post()
+  @Post('create')
   @Auth(ValidRoles.user)
   async create(
     @Body() createOrderDto: CreateOrderDto,

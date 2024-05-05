@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { type CreateOrderDto } from './dto/create-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
@@ -22,17 +22,28 @@ export class OrdersService {
 
   async create(createOrderDto: CreateOrderDto, idUser: User): Promise<Order> {
     const products = await this.productRepository.find({
-      where: { id: In(createOrderDto.idsProducts) },
+      where: { id: In(createOrderDto.items.map((item) => item.idProduct)) },
     });
 
     const user = await this.userRepository.findOneBy({ id: idUser.id });
+    if (!user) {
+      throw new NotFoundException(`User not found with id: ${idUser.id}`);
+    }
 
     const order = this.orderRepository.create({
       user,
-      details: products.map((product) => {
-        return this.ordersDetailsRepository.create(product);
+      details: products.map((product, index: number) => {
+        return this.ordersDetailsRepository.create({
+          product,
+          quantityPrimary: createOrderDto.items[index].quantityPrimary,
+          quantitySecondary: createOrderDto.items[index].quantitySecondary,
+          quantitySteam: createOrderDto.items[index].quantitySteam,
+        });
       }),
     });
+
+    console.log(order);
+    console.log(order.details);
 
     await this.orderRepository.save(order);
 

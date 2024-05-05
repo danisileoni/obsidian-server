@@ -1,15 +1,38 @@
 import { Product } from 'src/products/entities';
-import { Entity, JoinColumn, ManyToOne, PrimaryColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { Order } from './order.entity';
 
 @Entity()
 export class OrdersDetails {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
   id: string;
 
-  @ManyToOne(() => Product, (product) => product.ordersDetails)
+  @Column('numeric', {
+    nullable: true,
+  })
+  quantityPrimary: number;
+
+  @Column('numeric', {
+    nullable: true,
+  })
+  quantitySecondary: number;
+
+  @Column('numeric', {
+    nullable: true,
+  })
+  quantitySteam: number;
+
+  @ManyToOne(() => Product, (product) => product.ordersDetails, {
+    eager: true,
+  })
   @JoinColumn()
-  product: Product[];
+  product: Product;
 
   @ManyToOne(() => Order, (order) => order.details)
   @JoinColumn()

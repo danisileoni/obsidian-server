@@ -1,6 +1,7 @@
-import { IsString } from 'class-validator';
+import { IsArray } from 'class-validator';
+import { type ItemsDetails } from 'src/types';
 
 export class CreateOrderDto {
-  @IsString({ each: true })
-  idsProducts: string[];
+  @IsArray()
+  items: ItemsDetails[];
 }

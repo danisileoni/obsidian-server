@@ -6,9 +6,8 @@ import {
 } from '@nestjs/common';
 import { type CreatePaymentDto } from './dto/create-payment.dto';
 import { MercadopagoService } from '../mercadopago/mercadopago.service';
-import { type User } from 'src/users/entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { Payment } from './entities/payment.entity';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 import { type PaymentMethodDto } from './dto/payment-method.dto';
@@ -38,7 +37,7 @@ export class PaymentsService {
   // TODO: make documentation of each slider
   async create(
     createPaymentDto: CreatePaymentDto,
-    user: User,
+    idOrder: string,
   ): Promise<PaymentResponse | PaypalResponse> {
     let order: PaymentResponse | PaypalResponse;
     const { paymentGateway } = createPaymentDto;
@@ -54,11 +53,11 @@ export class PaymentsService {
           throw new BadRequestException(error);
         });
 
-      return await this.assignedNewOrders(user.id, order);
+      return await this.assignedNewPayment(idOrder, order);
     }
 
     if (paymentGateway === 'paypal') {
-      order = await this.paypal(createPaymentDto, user.id);
+      order = await this.paypal(createPaymentDto, idOrder);
     }
 
     return order;
@@ -85,7 +84,7 @@ export class PaymentsService {
     return order;
   }
 
-  public async assignedNewOrders(
+  public async assignedNewPayment(
     idOrder: string,
     order: PaypalCaptureResponse | PaymentResponse,
   ): Promise<PaypalCaptureResponse | PaymentResponse> {
@@ -95,6 +94,19 @@ export class PaymentsService {
     if (!orderToPaid) {
       throw new NotFoundException(`Order not found with id: ${idOrder}`);
     }
+    console.log(orderToPaid);
+
+    const accounts = await this.accountRepository.find({
+      where: {
+        product: In(
+          orderToPaid.details.map((details) => {
+            return details.product.id;
+          }),
+        ),
+      },
+    });
+
+    console.log(accounts);
 
     if (isOrderPaypalCapture(order)) {
       typeOrder = {
@@ -123,6 +135,7 @@ export class PaymentsService {
       order: orderToPaid,
     });
 
+    orderToPaid.payment = payment;
     orderToPaid.paid = true;
 
     await this.orderRepository.save(orderToPaid);

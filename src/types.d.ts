@@ -197,3 +197,10 @@ export interface ItemMP {
   quantity: number;
   unit_price: number;
 }
+
+export interface ItemsDetails {
+  idProduct: string;
+  quantityPrimary: number;
+  quantitySecondary: number;
+  quantitySteam: number;
+}
