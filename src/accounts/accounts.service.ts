@@ -30,6 +30,7 @@ export class AccountsService {
       password,
       quantityPrimary,
       quantitySecondary,
+      typeAccount,
     } = createAccountDto;
 
     const accountProduct = await this.productRepository.findOneBy({ id });
@@ -43,10 +44,10 @@ export class AccountsService {
         password: this.getCrypto(password),
         quantityPrimary,
         quantitySecondary,
+        typeAccount,
       }),
     ];
 
-    console.log(accountProduct);
     try {
       await this.productRepository.save(accountProduct);
       return {

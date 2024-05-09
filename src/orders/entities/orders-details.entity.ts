@@ -13,19 +13,13 @@ export class OrdersDetails {
   @PrimaryGeneratedColumn()
   id: string;
 
-  @Column('numeric', {
-    nullable: true,
-  })
+  @Column('numeric')
   quantityPrimary: number;
 
-  @Column('numeric', {
-    nullable: true,
-  })
+  @Column('numeric')
   quantitySecondary: number;
 
-  @Column('numeric', {
-    nullable: true,
-  })
+  @Column('numeric')
   quantitySteam: number;
 
   @ManyToOne(() => Product, (product) => product.ordersDetails, {

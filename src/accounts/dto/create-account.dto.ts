@@ -1,5 +1,6 @@
 import {
   IsEmail,
+  IsIn,
   IsNumber,
   IsOptional,
   IsString,
@@ -20,6 +21,10 @@ export class CreateAccountDto {
 
   @IsEmail()
   email: string;
+
+  @IsString()
+  @IsIn(['Play Station 4, Play Station 5', 'Steam'])
+  typeAccount: string;
 
   @IsString()
   password: string;

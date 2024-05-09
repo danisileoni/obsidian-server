@@ -56,7 +56,8 @@ export class ProductsService {
 
       return product;
     } catch (error) {
-      throw new InternalServerErrorException(error);
+      console.log(error);
+      throw new InternalServerErrorException('Check logs server');
     }
   }
 
@@ -166,9 +167,10 @@ export class ProductsService {
       // update
       return await this.productRepository.findOneBy({ id });
     } catch (error) {
+      console.log(error);
       await queryRunner.rollbackTransaction();
       await queryRunner.release();
-      throw new InternalServerErrorException(error);
+      throw new InternalServerErrorException('Check logs server');
     }
   }
 

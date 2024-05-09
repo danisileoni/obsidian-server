@@ -14,10 +14,14 @@ export class Account {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('numeric')
+  @Column('numeric', {
+    nullable: true,
+  })
   quantityPrimary: number;
 
-  @Column('numeric')
+  @Column('numeric', {
+    nullable: true,
+  })
   quantitySecondary: number;
 
   @Column('text', {
@@ -30,6 +34,11 @@ export class Account {
     nullable: false,
   })
   password: string;
+
+  @Column('text', {
+    nullable: false,
+  })
+  typeAccount: string;
 
   @ManyToOne(() => Product, (product) => product.account, {
     onDelete: 'CASCADE',

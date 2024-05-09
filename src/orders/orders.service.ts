@@ -22,7 +22,39 @@ export class OrdersService {
 
   async create(createOrderDto: CreateOrderDto, idUser: User): Promise<Order> {
     const products = await this.productRepository.find({
+      relations: { account: true },
       where: { id: In(createOrderDto.items.map((item) => item.idProduct)) },
+    });
+    if (!products) {
+      throw new NotFoundException(
+        `Products not found with id's: ${createOrderDto.items.toString()}`,
+      );
+    }
+
+    products.map((product, index) => {
+      let iPrimary: number = 0;
+      let iSecondary: number = 0;
+
+      if (createOrderDto.items[index].quantityPrimary >= 1) {
+        product.account.map((account) => {
+          iPrimary = iPrimary + +account.quantityPrimary;
+        });
+        if (createOrderDto.items[index].quantityPrimary > iPrimary) {
+          throw new NotFoundException(
+            'the product does not have sufficient stock',
+          );
+        }
+      }
+      if (createOrderDto.items[index].quantitySecondary >= 1) {
+        product.account.map((account) => {
+          iSecondary = iSecondary + +account.quantitySecondary;
+        });
+        if (createOrderDto.items[index].quantityPrimary > iPrimary) {
+          throw new NotFoundException(
+            'the product does not have sufficient stock',
+          );
+        }
+      }
     });
 
     const user = await this.userRepository.findOneBy({ id: idUser.id });
@@ -41,9 +73,6 @@ export class OrdersService {
         });
       }),
     });
-
-    console.log(order);
-    console.log(order.details);
 
     await this.orderRepository.save(order);
 

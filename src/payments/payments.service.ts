@@ -7,7 +7,7 @@ import {
 import { type CreatePaymentDto } from './dto/create-payment.dto';
 import { MercadopagoService } from '../mercadopago/mercadopago.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Payment } from './entities/payment.entity';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 import { type PaymentMethodDto } from './dto/payment-method.dto';
@@ -18,18 +18,16 @@ import {
   type PaypalResponse,
 } from 'src/types';
 import { isOrderPaypalCapture } from 'src/common/helpers/isOrderPaypal.helper';
-import { Account } from 'src/accounts/entities/account.entity';
 import { Order } from 'src/orders/entities/order.entity';
 
 @Injectable()
 export class PaymentsService {
   constructor(
-    @InjectRepository(Account)
-    private readonly accountRepository: Repository<Account>,
     @InjectRepository(Payment)
     private readonly paymentRepository: Repository<Payment>,
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
+    private readonly dataSource: DataSource,
     private readonly mercadopagoService: MercadopagoService,
     private readonly paypalService: PaypalService,
   ) {}
@@ -89,24 +87,12 @@ export class PaymentsService {
     order: PaypalCaptureResponse | PaymentResponse,
   ): Promise<PaypalCaptureResponse | PaymentResponse> {
     let typeOrder: TypeOrder;
+    const queryRunner = this.dataSource.createQueryRunner();
 
     const orderToPaid = await this.orderRepository.findOneBy({ id: idOrder });
     if (!orderToPaid) {
       throw new NotFoundException(`Order not found with id: ${idOrder}`);
     }
-    console.log(orderToPaid);
-
-    const accounts = await this.accountRepository.find({
-      where: {
-        product: In(
-          orderToPaid.details.map((details) => {
-            return details.product.id;
-          }),
-        ),
-      },
-    });
-
-    console.log(accounts);
 
     if (isOrderPaypalCapture(order)) {
       typeOrder = {
@@ -128,19 +114,36 @@ export class PaymentsService {
       };
     }
 
-    const payment = this.paymentRepository.create({
-      idPayment: typeOrder.id.toString(),
-      email: typeOrder.payer.email,
-      paymentGateway: typeOrder.paymentGateway,
-      order: orderToPaid,
-    });
+    try {
+      await queryRunner.connect();
 
-    orderToPaid.payment = payment;
-    orderToPaid.paid = true;
+      const payment = this.paymentRepository.create({
+        idPayment: typeOrder.id.toString(),
+        email: typeOrder.payer.email,
+        paymentGateway: typeOrder.paymentGateway,
+        order: orderToPaid,
+      });
 
-    await this.orderRepository.save(orderToPaid);
-    await this.paymentRepository.save(payment);
+      const account = await queryRunner.query(`
+      SELECT 
+        * 
+      FROM return_accounts_paid('${idOrder}');
+      `);
 
-    return order;
+      console.log({ account });
+
+      await this.paymentRepository.save(payment);
+
+      orderToPaid.paid = true;
+      orderToPaid.payment = payment;
+      await this.orderRepository.save(orderToPaid);
+
+      return order;
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Check logs server');
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

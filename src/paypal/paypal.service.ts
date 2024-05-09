@@ -41,7 +41,6 @@ export class PaypalService {
   ): Promise<PaypalResponse> {
     const convertUSD = await this.convertUSD(amount, items);
 
-    console.log(convertUSD);
     const body = {
       intent: 'CAPTURE',
       purchase_units: [
@@ -160,7 +159,6 @@ export class PaypalService {
       let amountConvert: number = 0;
 
       amountUnitsConvert.forEach((amount) => {
-        console.log(amount);
         amountConvert += amount.amount * amount.quantity;
       });
 
