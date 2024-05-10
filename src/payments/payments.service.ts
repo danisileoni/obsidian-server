@@ -124,13 +124,11 @@ export class PaymentsService {
         order: orderToPaid,
       });
 
-      const account = await queryRunner.query(`
-      SELECT 
-        * 
-      FROM return_accounts_paid('${idOrder}');
-      `);
-
-      console.log({ account });
+      // const account = await queryRunner.query(`
+      // SELECT
+      //   *
+      // FROM return_accounts_paid('${idOrder}');
+      // `);
 
       await this.paymentRepository.save(payment);
 

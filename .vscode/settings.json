@@ -7,6 +7,7 @@
     "mercadopago",
     "nestjs",
     "PAGO",
+    "smtps",
     "typeorm"
   ]
 }
