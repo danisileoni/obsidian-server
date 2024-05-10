@@ -13,6 +13,7 @@ import { ProductsModule } from 'src/products/products.module';
 import { Order } from 'src/orders/entities/order.entity';
 import { OrdersDetails } from 'src/orders/entities/orders-details.entity';
 import { AccountsPaid } from './entities/accounts-paid.entity';
+import { MailsModule } from '../mails/mails.module';
 
 @Module({
   controllers: [PaymentsController],
@@ -31,6 +32,7 @@ import { AccountsPaid } from './entities/accounts-paid.entity';
     PassportModule,
     PaypalModule,
     ProductsModule,
+    MailsModule,
   ],
 })
 export class PaymentsModule {}

@@ -204,3 +204,11 @@ export interface ItemsDetails {
   quantitySecondary: number;
   quantitySteam: number;
 }
+
+export interface ItemEmailPaid {
+  image_url: string;
+  name_product: string;
+  type_account: string;
+  email: string;
+  password: string;
+}

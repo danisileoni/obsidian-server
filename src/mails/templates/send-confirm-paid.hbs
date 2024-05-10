@@ -1,0 +1,16 @@
+<h1>MUCHAS GRACIAS POR TU COMPRA</h1>
+<h3>Aquí tienes tus juegos</h3>
+
+<ul>
+  {{#each items}}
+    <li>
+      <img src="{{this.image_url}}" alt="{{this.product_name}}">
+      <h4>{{this.name_product}}</h5>
+      <h5>Cuenta: {{this.type_account}}</h5>
+      <p>Email: {{this.email}}</p>
+      <p>Contraseña: {{this.password}}</p>
+    </li>
+  {{/each}}
+
+  {{!-- <a href=></a> PDF example --}}
+</ul>

@@ -16,9 +16,11 @@ import {
   type TypeOrder,
   type PaypalCaptureResponse,
   type PaypalResponse,
+  type ItemEmailPaid,
 } from 'src/types';
 import { isOrderPaypalCapture } from 'src/common/helpers/isOrderPaypal.helper';
 import { Order } from 'src/orders/entities/order.entity';
+import { MailsService } from '../mails/mails.service';
 
 @Injectable()
 export class PaymentsService {
@@ -30,6 +32,7 @@ export class PaymentsService {
     private readonly dataSource: DataSource,
     private readonly mercadopagoService: MercadopagoService,
     private readonly paypalService: PaypalService,
+    private readonly mailsService: MailsService,
   ) {}
 
   // TODO: make documentation of each slider
@@ -124,11 +127,16 @@ export class PaymentsService {
         order: orderToPaid,
       });
 
-      // const account = await queryRunner.query(`
-      // SELECT
-      //   *
-      // FROM return_accounts_paid('${idOrder}');
-      // `);
+      const account: ItemEmailPaid[] = await queryRunner.query(`
+      SELECT
+        *
+      FROM return_accounts_paid('${idOrder}');
+      `);
+
+      await this.mailsService.sendConfirmPaid(
+        'obsidiandigitales@outlook.com.ar',
+        account,
+      );
 
       await this.paymentRepository.save(payment);
 
