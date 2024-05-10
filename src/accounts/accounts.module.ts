@@ -13,7 +13,7 @@ import { ConfigModule } from '@nestjs/config';
     TypeOrmModule.forFeature([Account, Product]),
     ProductsModule,
   ],
-  exports: [AccountsModule],
+  exports: [AccountsModule, AccountsService],
   controllers: [AccountsController],
   providers: [AccountsService],
 })

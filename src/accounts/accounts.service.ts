@@ -169,7 +169,7 @@ export class AccountsService {
     return encryptedData;
   }
 
-  private getDecrypt(data: string): string {
+  public getDecrypt(data: string): string {
     try {
       const key: string = this.configService.get('CRYPTO_PASSWORD');
       const iv: string = this.configService.get('CRYPTO_IV');

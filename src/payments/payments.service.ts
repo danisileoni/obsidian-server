@@ -21,6 +21,7 @@ import {
 import { isOrderPaypalCapture } from 'src/common/helpers/isOrderPaypal.helper';
 import { Order } from 'src/orders/entities/order.entity';
 import { MailsService } from '../mails/mails.service';
+import { AccountsService } from '../accounts/accounts.service';
 
 @Injectable()
 export class PaymentsService {
@@ -33,6 +34,7 @@ export class PaymentsService {
     private readonly mercadopagoService: MercadopagoService,
     private readonly paypalService: PaypalService,
     private readonly mailsService: MailsService,
+    private readonly accountsService: AccountsService,
   ) {}
 
   // TODO: make documentation of each slider
@@ -127,15 +129,25 @@ export class PaymentsService {
         order: orderToPaid,
       });
 
-      const account: ItemEmailPaid[] = await queryRunner.query(`
+      const accounts: ItemEmailPaid[] = await queryRunner.query(`
       SELECT
         *
       FROM return_accounts_paid('${idOrder}');
       `);
 
+      const deCryptAccount: ItemEmailPaid[] = accounts.map((account) => {
+        return {
+          email: this.accountsService.getDecrypt(account.email),
+          password: this.accountsService.getDecrypt(account.password),
+          image_url: account.image_url,
+          product_name: account.product_name,
+          type_account: account.type_account,
+        };
+      });
+
       await this.mailsService.sendConfirmPaid(
         'obsidiandigitales@outlook.com.ar',
-        account,
+        deCryptAccount,
       );
 
       await this.paymentRepository.save(payment);

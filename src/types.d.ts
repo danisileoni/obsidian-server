@@ -207,7 +207,7 @@ export interface ItemsDetails {
 
 export interface ItemEmailPaid {
   image_url: string;
-  name_product: string;
+  product_name: string;
   type_account: string;
   email: string;
   password: string;

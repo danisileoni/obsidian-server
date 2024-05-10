@@ -31,29 +31,33 @@ export class OrdersService {
       );
     }
 
-    products.map((product, index) => {
-      let iPrimary: number = 0;
-      let iSecondary: number = 0;
-
-      if (createOrderDto.items[index].quantityPrimary >= 1) {
-        product.account.map((account) => {
-          iPrimary = iPrimary + +account.quantityPrimary;
-        });
-        if (createOrderDto.items[index].quantityPrimary > iPrimary) {
-          throw new NotFoundException(
-            'the product does not have sufficient stock',
-          );
-        }
+    products.forEach((product) => {
+      const orderItem = createOrderDto.items.find(
+        (item) => item.idProduct === product.id,
+      );
+      if (!orderItem) {
+        return;
       }
-      if (createOrderDto.items[index].quantitySecondary >= 1) {
-        product.account.map((account) => {
-          iSecondary = iSecondary + +account.quantitySecondary;
-        });
-        if (createOrderDto.items[index].quantityPrimary > iPrimary) {
-          throw new NotFoundException(
-            'the product does not have sufficient stock',
-          );
-        }
+
+      const iPrimary = product.account.reduce(
+        (sum, account) => sum + +account.quantityPrimary,
+        0,
+      );
+      const iSecondary = product.account.reduce(
+        (sum, account) => sum + +account.quantitySecondary,
+        0,
+      );
+
+      if (orderItem.quantityPrimary > iPrimary) {
+        throw new NotFoundException(
+          'the product does not have sufficient primary stock',
+        );
+      }
+
+      if (orderItem.quantitySecondary > iSecondary) {
+        throw new NotFoundException(
+          'the product does not have sufficient secondary stock',
+        );
       }
     });
 

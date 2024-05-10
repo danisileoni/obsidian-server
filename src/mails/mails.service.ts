@@ -16,6 +16,7 @@ export class MailsService {
       template: './send-confirm-paid',
       context: {
         items,
+        date: new Date().getFullYear(),
       },
     });
   }

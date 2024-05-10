@@ -1,16 +1,108 @@
-<h1>MUCHAS GRACIAS POR TU COMPRA</h1>
-<h3>Aquí tienes tus juegos</h3>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email de Agradecimiento</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #eeeeee;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .title {
+      text-align: center;
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .sub-title {
+      text-align: center;
+      color: #555;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    .card {
+      display: flex;
+      align-items: center;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      margin-top: 20px;
+      padding: 15px;
+      transition: background-color 0.3s ease;
+    }
+    .card:hover {
+      background-color: #f0f0f0;
+    }
+    .image {
+      width: 100px;
+      height: auto;
+      border-radius: 4px;
+      margin-right: 15px;
+    }
+    .card-div {
+      flex: 1;
+    }
+    .card-div h3 {
+      color: #333;
+      font-size: 16px;
+      margin: 0 0 5px 0;
+    }
+    .card-div h4 {
+      color: #666;
+      font-size: 14px;
+      margin: 0 0 5px 0;
+    }
+    .card-div p {
+      color: #888;
+      font-size: 12px;
+      margin: 0;
+    }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #aaaaaa;
+      margin-top: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">MUCHAS GRACIAS POR TU COMPRA</h1>
+    <h3 class="sub-title">Aquí tienes tus juegos</h3>
 
-<ul>
-  {{#each items}}
-    <li>
-      <img src="{{this.image_url}}" alt="{{this.product_name}}">
-      <h4>{{this.name_product}}</h5>
-      <h5>Cuenta: {{this.type_account}}</h5>
-      <p>Email: {{this.email}}</p>
-      <p>Contraseña: {{this.password}}</p>
-    </li>
-  {{/each}}
+    <ul>
+      {{#each items}}
+        <li class="card">
+          <img class="image" src="{{this.image_url}}" alt="{{this.product_name}}">
+          <div class="card-div">
+            <h3>{{this.product_name}}</h3>
+            <h4>Cuenta: {{this.type_account}}</h4>
+            <p>Email: {{this.email}}</p>
+            <p>Contraseña: {{this.password}}</p>
+          </div>
+        </li>
+      {{/each}}
+    </ul>
 
-  {{!-- <a href=></a> PDF example --}}
-</ul>
+    <div class="footer">
+      <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+      <p>©{{date}} ObsidianDigitales. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</body>
+</html>
