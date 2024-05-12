@@ -1,4 +1,3 @@
-import { AccountsPaid } from 'src/payments/entities/accounts-paid.entity';
 import { Product } from 'src/products/entities';
 import {
   Column,
@@ -6,8 +5,9 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
-  ManyToMany,
+  OneToMany,
 } from 'typeorm';
+import { AccountPaid } from './accounts-paid.entity';
 
 @Entity()
 export class Account {
@@ -42,10 +42,13 @@ export class Account {
 
   @ManyToOne(() => Product, (product) => product.account, {
     onDelete: 'CASCADE',
+    nullable: false,
   })
   @JoinColumn()
   product: Product;
 
-  @ManyToMany(() => AccountsPaid, (accountPaid) => accountPaid.account)
-  accountPaid: AccountsPaid;
+  @OneToMany(() => AccountPaid, (accountPaid) => accountPaid.account, {
+    eager: true,
+  })
+  paid: AccountPaid[];
 }

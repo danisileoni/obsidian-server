@@ -13,7 +13,7 @@ import { User } from 'src/users/entities/user.entity';
 
 @Entity()
 export class Order {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id: string;
 
   @Column('text', {
@@ -27,7 +27,9 @@ export class Order {
   })
   paid: boolean;
 
-  @ManyToOne(() => User, (user) => user.orders)
+  @ManyToOne(() => User, (user) => user.orders, {
+    nullable: false,
+  })
   @JoinColumn()
   user: User;
 

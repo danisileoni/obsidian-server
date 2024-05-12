@@ -6,21 +6,14 @@ import {
   Param,
   Delete,
   Query,
-  ParseUUIDPipe,
 } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
-import { GetUser } from 'src/auth/decorators/get-user.decorator';
-import { User } from 'src/users/entities/user.entity';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 import { PaymentMethodDto } from './dto/payment-method.dto';
 import { PaypalService } from 'src/paypal/paypal.service';
-import {
-  PaypalCaptureResponse,
-  PaypalQuery,
-  type PaypalResponse,
-} from 'src/types';
+import { PaypalQuery } from 'src/types';
 
 @Controller('payments')
 export class PaymentsController {
@@ -32,7 +25,7 @@ export class PaymentsController {
   @Post('create/:id')
   @Auth()
   async create(
-    @Param('id', ParseUUIDPipe) idOrder: string,
+    @Param('id') idOrder: string,
     @Body() createPaymentDto: CreatePaymentDto,
   ) {
     return await this.paymentsService.create(createPaymentDto, idOrder);
@@ -41,20 +34,12 @@ export class PaymentsController {
   @Get('capture-order-pp/:id')
   async captureOrderPaypal(
     @Query() query: PaypalQuery,
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id') id: string,
   ) {
     const captureOrder = await this.paypalService.captureOrder(query);
 
     return await this.paymentsService.assignedNewPayment(id, captureOrder);
   }
-
-  // @Post('capture-order-mp')
-  // async captureOrderMP(
-  //   @Query() query: PaypalQuery,
-  //   @Param('id', ParseUUIDPipe) id: string,
-  // ) {
-  //   console.log(query);
-  // }
 
   @Get(':id')
   async findOne(

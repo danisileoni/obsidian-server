@@ -12,9 +12,9 @@ import { Account } from 'src/accounts/entities/account.entity';
 import { ProductsModule } from 'src/products/products.module';
 import { Order } from 'src/orders/entities/order.entity';
 import { OrdersDetails } from 'src/orders/entities/orders-details.entity';
-import { AccountsPaid } from './entities/accounts-paid.entity';
 import { MailsModule } from '../mails/mails.module';
 import { AccountsModule } from '../accounts/accounts.module';
+import { AccountPaid } from 'src/accounts/entities/accounts-paid.entity';
 
 @Module({
   controllers: [PaymentsController],
@@ -26,7 +26,7 @@ import { AccountsModule } from '../accounts/accounts.module';
       Account,
       Order,
       OrdersDetails,
-      AccountsPaid,
+      AccountPaid,
     ]),
     MercadopagoModule,
     AuthModule,

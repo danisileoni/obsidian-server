@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Get,
-  Delete,
-  Param,
-  ParseUUIDPipe,
-} from '@nestjs/common';
+import { Controller, Post, Body, Get, Delete, Param } from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { CreateSaleDto } from './dto/create-sale.dto';
 import { CreateTimerDto } from './dto/create-timer.dto';
@@ -20,7 +12,7 @@ export class SalesController {
   @Post('create/:id')
   async create(
     @Body() createSaleDto: CreateSaleDto,
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id') id: string,
   ): Promise<Sale> {
     return await this.salesService.create(createSaleDto, id);
   }
@@ -31,7 +23,7 @@ export class SalesController {
   }
 
   @Get(':id')
-  async findSale(@Param('id', ParseUUIDPipe) id: string): Promise<Sale> {
+  async findSale(@Param('id') id: string): Promise<Sale> {
     return await this.salesService.findSale(id);
   }
 
@@ -46,9 +38,7 @@ export class SalesController {
   }
 
   @Delete(':id')
-  async removeSale(
-    @Param('id', ParseUUIDPipe) id: string,
-  ): Promise<{ message: string }> {
+  async removeSale(@Param('id') id: string): Promise<{ message: string }> {
     return await this.salesService.removeSale(id);
   }
 }

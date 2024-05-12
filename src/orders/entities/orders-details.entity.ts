@@ -24,11 +24,14 @@ export class OrdersDetails {
 
   @ManyToOne(() => Product, (product) => product.ordersDetails, {
     eager: true,
+    nullable: false,
   })
   @JoinColumn()
   product: Product;
 
-  @ManyToOne(() => Order, (order) => order.details)
+  @ManyToOne(() => Order, (order) => order.details, {
+    nullable: false,
+  })
   @JoinColumn()
   order: Order;
 }

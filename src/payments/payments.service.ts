@@ -22,6 +22,7 @@ import { isOrderPaypalCapture } from 'src/common/helpers/isOrderPaypal.helper';
 import { Order } from 'src/orders/entities/order.entity';
 import { MailsService } from '../mails/mails.service';
 import { AccountsService } from '../accounts/accounts.service';
+import { AccountPaid } from 'src/accounts/entities/accounts-paid.entity';
 
 @Injectable()
 export class PaymentsService {
@@ -30,6 +31,8 @@ export class PaymentsService {
     private readonly paymentRepository: Repository<Payment>,
     @InjectRepository(Order)
     private readonly orderRepository: Repository<Order>,
+    @InjectRepository(AccountPaid)
+    private readonly accountPaidRepository: Repository<AccountPaid>,
     private readonly dataSource: DataSource,
     private readonly mercadopagoService: MercadopagoService,
     private readonly paypalService: PaypalService,
@@ -94,11 +97,6 @@ export class PaymentsService {
     let typeOrder: TypeOrder;
     const queryRunner = this.dataSource.createQueryRunner();
 
-    const orderToPaid = await this.orderRepository.findOneBy({ id: idOrder });
-    if (!orderToPaid) {
-      throw new NotFoundException(`Order not found with id: ${idOrder}`);
-    }
-
     if (isOrderPaypalCapture(order)) {
       typeOrder = {
         id: order.id,
@@ -118,9 +116,14 @@ export class PaymentsService {
         paymentGateway: 'mercadopago',
       };
     }
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
     try {
-      await queryRunner.connect();
+      const orderToPaid = await this.orderRepository.findOneBy({ id: idOrder });
+      if (!orderToPaid) {
+        throw new NotFoundException(`Order not found with id: ${idOrder}`);
+      }
 
       const payment = this.paymentRepository.create({
         idPayment: typeOrder.id.toString(),
@@ -142,6 +145,7 @@ export class PaymentsService {
           image_url: account.image_url,
           product_name: account.product_name,
           type_account: account.type_account,
+          id: account.id,
         };
       });
 
@@ -150,15 +154,26 @@ export class PaymentsService {
         deCryptAccount,
       );
 
-      await this.paymentRepository.save(payment);
+      await queryRunner.manager.save(payment);
+
+      const accountPaid = accounts.map((account) => {
+        return this.accountPaidRepository.create({
+          payment,
+          account: { id: account.id },
+        });
+      });
 
       orderToPaid.paid = true;
       orderToPaid.payment = payment;
-      await this.orderRepository.save(orderToPaid);
+      await queryRunner.manager.save(orderToPaid);
+      await queryRunner.manager.save(accountPaid);
+
+      await queryRunner.commitTransaction();
 
       return order;
     } catch (error) {
       console.log(error);
+      await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException('Check logs server');
     } finally {
       await queryRunner.release();

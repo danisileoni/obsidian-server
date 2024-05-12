@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { type CreateOrderDto } from './dto/create-order.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
@@ -83,7 +87,52 @@ export class OrdersService {
     return order;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} order`;
+  async findOne(id: string): Promise<Order> {
+    const order = await this.orderRepository
+      .findOne({
+        relations: {
+          details: true,
+        },
+        where: { id },
+      })
+      .catch((error) => {
+        console.log(error);
+        throw new InternalServerErrorException('Check logs server');
+      });
+    if (!order) {
+      throw new NotFoundException(`Order not found with id: ${id}`);
+    }
+
+    return order;
+  }
+
+  async find(): Promise<Order[]> {
+    const orders = await this.orderRepository.find().catch((error) => {
+      console.log(error);
+      throw new InternalServerErrorException('Check logs server');
+    });
+
+    if (orders.length <= 0) {
+      throw new NotFoundException('Orders not found');
+    }
+
+    return orders;
+  }
+
+  async remove(id: string): Promise<{ message: string }> {
+    const order = await this.orderRepository.findOneBy({ id });
+    if (!order) {
+      throw new NotFoundException(`Order not found with id: ${id}`);
+    }
+    try {
+      await this.orderRepository.remove(order);
+
+      return {
+        message: 'The order has been deleted correctly',
+      };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Check logs server');
+    }
   }
 }

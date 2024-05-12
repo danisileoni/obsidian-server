@@ -6,11 +6,12 @@ import { Account } from './entities/account.entity';
 import { ProductsModule } from 'src/products/products.module';
 import { Product } from 'src/products/entities';
 import { ConfigModule } from '@nestjs/config';
+import { AccountPaid } from './entities/accounts-paid.entity';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Account, Product]),
+    TypeOrmModule.forFeature([Account, Product, AccountPaid]),
     ProductsModule,
   ],
   exports: [AccountsModule, AccountsService],

@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Param, Delete } from '@nestjs/common';
+import { Controller, Post, Body, Param, Delete, Get } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
@@ -20,8 +20,18 @@ export class OrdersController {
     return await this.ordersService.create(createOrderDto, idUser);
   }
 
+  @Get(':id')
+  async findOne(@Param('id') id: string): Promise<Order> {
+    return await this.ordersService.findOne(id);
+  }
+
+  @Get()
+  async find(): Promise<Order[]> {
+    return await this.ordersService.find();
+  }
+
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.ordersService.remove(+id);
+  async remove(@Param('id') id: string): Promise<{ message: string }> {
+    return await this.ordersService.remove(id);
   }
 }

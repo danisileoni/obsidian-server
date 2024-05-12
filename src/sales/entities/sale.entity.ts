@@ -10,7 +10,7 @@ import {
 
 @Entity()
 export class Sale {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id: string;
 
   @Column('int', {

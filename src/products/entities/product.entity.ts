@@ -14,7 +14,7 @@ import { OrdersDetails } from 'src/orders/entities/orders-details.entity';
 
 @Entity()
 export class Product {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id: string;
 
   @Column('text', {

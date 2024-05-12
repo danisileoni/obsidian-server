@@ -211,4 +211,5 @@ export interface ItemEmailPaid {
   type_account: string;
   email: string;
   password: string;
+  id: string;
 }

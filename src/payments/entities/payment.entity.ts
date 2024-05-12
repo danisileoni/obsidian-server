@@ -1,13 +1,13 @@
+import { AccountPaid } from 'src/accounts/entities/accounts-paid.entity';
 import { Order } from 'src/orders/entities/order.entity';
 import {
   Column,
   Entity,
   PrimaryGeneratedColumn,
   OneToOne,
-  OneToMany,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
-import { AccountsPaid } from './accounts-paid.entity';
 
 @Entity()
 export class Payment {
@@ -39,6 +39,6 @@ export class Payment {
   @JoinColumn()
   order: Order;
 
-  @OneToMany(() => AccountsPaid, (accountPaid) => accountPaid.payment)
-  accountsPaid: AccountsPaid[];
+  @OneToMany(() => AccountPaid, (accountPaid) => accountPaid.payment)
+  accountPaid: AccountPaid[];
 }
