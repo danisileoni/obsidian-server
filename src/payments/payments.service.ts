@@ -10,7 +10,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import { Payment } from './entities/payment.entity';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
-import { type PaymentMethodDto } from './dto/payment-method.dto';
 import { PaypalService } from 'src/paypal/paypal.service';
 import {
   type TypeOrder,
@@ -69,11 +68,24 @@ export class PaymentsService {
     return order;
   }
 
-  async findOne(
-    id: string,
-    paymentMethodDto: PaymentMethodDto,
-  ): Promise<PaymentResponse> {
-    return await this.mercadopagoService.searchOrder(id);
+  async findOne(id: string): Promise<Payment> {
+    const payment = await this.paymentRepository.findOneBy({ id });
+
+    if (!payment) {
+      throw new NotFoundException(`Payment not found with id: ${id}`);
+    }
+
+    return payment;
+  }
+
+  async find(): Promise<Payment[]> {
+    const payments = await this.paymentRepository.find();
+
+    if (payments.length <= 0) {
+      throw new NotFoundException('Payments not found');
+    }
+
+    return payments;
   }
 
   private async paypal(

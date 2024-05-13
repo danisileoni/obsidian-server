@@ -119,6 +119,27 @@ export class OrdersService {
     return orders;
   }
 
+  async disablePaid(id: string): Promise<{ message: string }> {
+    const order = await this.orderRepository.findOneBy({ id });
+    if (!order) {
+      throw new NotFoundException(`Order not found with id: ${id}`);
+    }
+
+    const updateOrder = await this.orderRepository.preload({
+      ...order,
+      paid: false,
+    });
+
+    await this.orderRepository.save(updateOrder).catch((error) => {
+      console.log(error);
+      throw new InternalServerErrorException('Check logs server');
+    });
+
+    return {
+      message: 'the payment has been assigned as null',
+    };
+  }
+
   async remove(id: string): Promise<{ message: string }> {
     const order = await this.orderRepository.findOneBy({ id });
     if (!order) {

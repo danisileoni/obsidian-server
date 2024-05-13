@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Param, Delete, Get } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Get,
+  Put,
+} from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { GetUser } from 'src/auth/decorators/get-user.decorator';
@@ -28,6 +36,11 @@ export class OrdersController {
   @Get()
   async find(): Promise<Order[]> {
     return await this.ordersService.find();
+  }
+
+  @Put(':id')
+  async disablePaid(@Param('id') id: string): Promise<{ message: string }> {
+    return await this.ordersService.disablePaid(id);
   }
 
   @Delete(':id')

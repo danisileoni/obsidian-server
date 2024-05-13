@@ -14,6 +14,7 @@ import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTyp
 import { PaymentMethodDto } from './dto/payment-method.dto';
 import { PaypalService } from 'src/paypal/paypal.service';
 import { PaypalQuery } from 'src/types';
+import { Payment } from './entities/payment.entity';
 
 @Controller('payments')
 export class PaymentsController {
@@ -42,11 +43,13 @@ export class PaymentsController {
   }
 
   @Get(':id')
-  async findOne(
-    @Param('id') id: string,
-    @Body() paymentMethodDto: PaymentMethodDto,
-  ): Promise<PaymentResponse> {
-    return await this.paymentsService.findOne(id, paymentMethodDto);
+  async findOne(@Param('id') id: string): Promise<Payment> {
+    return await this.paymentsService.findOne(id);
+  }
+
+  @Get()
+  async find(): Promise<Payment[]> {
+    return await this.paymentsService.find();
   }
 
   @Delete()
