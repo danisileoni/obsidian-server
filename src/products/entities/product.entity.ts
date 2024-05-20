@@ -1,30 +1,21 @@
 import {
-  BeforeInsert,
-  BeforeUpdate,
   Column,
   Entity,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ProductImage } from './';
 import { Account } from 'src/accounts/entities/account.entity';
 import { Sale } from 'src/sales/entities/sale.entity';
 import { OrdersDetails } from 'src/orders/entities/orders-details.entity';
+import { Platform } from 'src/platform/entities/platform.entity';
+import { InfoProduct } from './info-product.entity';
 
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn()
   id: string;
-
-  @Column('text', {
-    unique: true,
-    nullable: false,
-  })
-  title: string;
-
-  @Column('text')
-  description: string;
 
   @Column('numeric', {
     nullable: true,
@@ -42,30 +33,12 @@ export class Product {
   price: number;
 
   @Column('text', {
-    nullable: false,
-  })
-  slug: string;
-
-  @Column('text', {
-    array: true,
-    default: [],
-  })
-  tags: string[];
-
-  @Column('text', {
     default: Date(),
   })
   createAt: Date;
 
-  @OneToMany(() => ProductImage, (productImage) => productImage.product, {
-    cascade: true,
-    eager: true,
-  })
-  images: ProductImage[];
-
   @OneToMany(() => Account, (account) => account.product, {
     cascade: true,
-    eager: true,
   })
   account: Account[];
 
@@ -75,26 +48,12 @@ export class Product {
   })
   sale: Sale;
 
+  @ManyToOne(() => InfoProduct, (infoProduct) => infoProduct.product)
+  infoProduct: InfoProduct;
+
+  @ManyToOne(() => Platform, (platform) => platform.product)
+  platform: Platform;
+
   @OneToMany(() => OrdersDetails, (product) => product.product)
   ordersDetails: OrdersDetails;
-
-  @BeforeInsert()
-  checkSlugInsert(): void {
-    this.slug = this.title
-      .toLocaleLowerCase()
-      .trim()
-      .replaceAll(' ', '_')
-      .replaceAll("'", '')
-      .replaceAll('.', '');
-  }
-
-  @BeforeUpdate()
-  checkSlugUpdate(): void {
-    this.slug = this.title
-      .toLocaleLowerCase()
-      .trim()
-      .replaceAll(' ', '_')
-      .replaceAll("'", '')
-      .replaceAll('.', '');
-  }
 }

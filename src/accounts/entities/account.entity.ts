@@ -4,7 +4,6 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   ManyToOne,
-  JoinColumn,
   OneToMany,
 } from 'typeorm';
 import { AccountPaid } from './accounts-paid.entity';
@@ -44,7 +43,6 @@ export class Account {
     onDelete: 'CASCADE',
     nullable: false,
   })
-  @JoinColumn()
   product: Product;
 
   @OneToMany(() => AccountPaid, (accountPaid) => accountPaid.account, {

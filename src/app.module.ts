@@ -18,6 +18,8 @@ import { PaypalModule } from './paypal/paypal.module';
 import { SalesModule } from './sales/sales.module';
 import { OrdersModule } from './orders/orders.module';
 import { MailsModule } from './mails/mails.module';
+import { PlatformModule } from './platform/platform.module';
+import { ProductsService } from './info-products/products/products.service';
 
 @Module({
   imports: [
@@ -30,7 +32,7 @@ import { MailsModule } from './mails/mails.module';
       password: process.env.DB_POSTGRES_PASSWORD,
       database: process.env.DB_POSTGRES_NAME,
       autoLoadEntities: true,
-      // in production false
+      // TODO: in production false
       synchronize: true,
     }),
     UsersModule,
@@ -46,9 +48,10 @@ import { MailsModule } from './mails/mails.module';
     SalesModule,
     OrdersModule,
     MailsModule,
+    PlatformModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, ProductsService],
   exports: [ConfigModule],
 })
 export class AppModule {}

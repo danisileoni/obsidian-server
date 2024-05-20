@@ -9,6 +9,7 @@ import {
   UseInterceptors,
   UploadedFiles,
   Query,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -18,50 +19,92 @@ import { fileFilter } from 'src/common/helpers/fileFilter.helper';
 import { ParseSharpPipe } from 'src/common/pipes/sharp-pipe.pipe';
 import { type Product } from './entities';
 import { PaginationDto } from '../common/dtos/pagination.dto';
+import { type InfoProduct } from './entities/info-product.entity';
+import { CreateInfoProductDto } from './dto/create-info-product.dto';
+import { InfoProductsService } from './info-products.service';
+import { UpdateInfoProductDto } from './dto/update-info-product.dto';
 
 @Controller('products')
 export class ProductsController {
-  constructor(private readonly productsService: ProductsService) {}
+  constructor(
+    private readonly productsService: ProductsService,
+    private readonly infoProductsService: InfoProductsService,
+  ) {}
 
-  @Post('create')
+  @Post('info-products/create')
   @UseInterceptors(
     FilesInterceptor('images', 6, {
       fileFilter,
     }),
   )
-  async create(
+  async createInfoProduct(
     @UploadedFiles(ParseSharpPipe) images: Express.Multer.File[],
-    @Body() createProductDto: CreateProductDto,
-  ): Promise<Product> {
-    return await this.productsService.create(createProductDto, images);
+    @Body() createInfoProduct: CreateInfoProductDto,
+  ): Promise<InfoProduct> {
+    return await this.infoProductsService.create(createInfoProduct, images);
   }
 
-  @Get()
-  async findAll(@Query() paginationDto: PaginationDto): Promise<Product[]> {
-    return await this.productsService.findAll(paginationDto);
+  @Get('info-products')
+  async findAllInfoProduct(): Promise<InfoProduct[]> {
+    return await this.infoProductsService.findAll();
   }
 
-  @Get(':term')
-  async findOne(@Param('term') term: string): Promise<Product> {
-    return await this.productsService.findOne(term);
+  @Get('info-products/:term')
+  async findOneInfoProduct(@Param('term') term: string): Promise<InfoProduct> {
+    return await this.infoProductsService.findOne(term);
   }
 
-  @Patch(':id')
+  @Patch('info-products/:id')
   @UseInterceptors(
     FilesInterceptor('images', 6, {
       fileFilter,
     }),
   )
-  async update(
+  async updateInfoProduct(
     @UploadedFiles(ParseSharpPipe) images: Express.Multer.File[],
     @Param('id') id: string,
-    @Body() updateProductDto: UpdateProductDto,
-  ): Promise<object> {
-    return await this.productsService.update(id, images, updateProductDto);
+    @Body() updateInfoProductDto: UpdateInfoProductDto,
+  ): Promise<InfoProduct> {
+    return await this.infoProductsService.update(
+      id,
+      images,
+      updateInfoProductDto,
+    );
   }
 
-  @Delete(':id')
-  async remove(@Param('id') id: string): Promise<object> {
-    return await this.productsService.remove(id);
+  @Delete('info-product/:id')
+  async removeInfoProduct(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<{ message: string }> {
+    return await this.infoProductsService.remove(id);
   }
+
+  // @Get()
+  // async findAll(@Query() paginationDto: PaginationDto): Promise<Product[]> {
+  //   return await this.productsService.findAll(paginationDto);
+  // }
+
+  // @Get(':term')
+  // async findOne(@Param('term') term: string): Promise<Product> {
+  //   return await this.productsService.findOne(term);
+  // }
+
+  // @Patch(':id')
+  // @UseInterceptors(
+  //   FilesInterceptor('images', 6, {
+  //     fileFilter,
+  //   }),
+  // )
+  // async update(
+  //   @UploadedFiles(ParseSharpPipe) images: Express.Multer.File[],
+  //   @Param('id') id: string,
+  //   @Body() updateProductDto: UpdateProductDto,
+  // ): Promise<object> {
+  //   return await this.productsService.update(id, images, updateProductDto);
+  // }
+
+  // @Delete(':id')
+  // async remove(@Param('id') id: string): Promise<object> {
+  //   return await this.productsService.remove(id);
+  // }
 }
