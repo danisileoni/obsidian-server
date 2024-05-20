@@ -7,7 +7,7 @@ import { type CreateSaleDto } from './dto/create-sale.dto';
 import { type CreateTimerDto } from './dto/create-timer.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Timer } from './entities/timer.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Sale } from './entities/sale.entity';
 import { Product } from 'src/products/entities';
 
@@ -20,9 +20,13 @@ export class SalesService {
     private readonly saleRepository: Repository<Sale>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    private readonly dataSource: DataSource,
   ) {}
 
   async create(createSaleDto: CreateSaleDto, id: string): Promise<Sale> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+
     const product = await this.productRepository.findOneBy({ id });
 
     if (!product) {
@@ -36,10 +40,16 @@ export class SalesService {
       });
 
       await this.saleRepository.save(sale);
+
+      await queryRunner.query('REFRESH MATERIALIZED view product_materialized');
+      await queryRunner.commitTransaction();
+
       return sale;
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Check logs servers');
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -93,6 +103,9 @@ export class SalesService {
   }
 
   async removeSale(id: string): Promise<{ message: string }> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+
     const sale = await this.saleRepository.findOneBy({ id });
 
     if (!sale) {
@@ -101,12 +114,18 @@ export class SalesService {
 
     try {
       await this.saleRepository.remove(sale);
+
+      await queryRunner.query('REFRESH MATERIALIZED view product_materialized');
+      await queryRunner.commitTransaction();
+
       return {
         message: `has been remove sale with id: ${id} correctly`,
       };
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Check server logs');
+    } finally {
+      await queryRunner.release();
     }
   }
 }

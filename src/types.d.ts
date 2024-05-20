@@ -213,3 +213,25 @@ export interface ItemEmailPaid {
   password: string;
   id: string;
 }
+
+export interface ViewProduct {
+  info_product_id: string;
+  product_id: number;
+  product_image_id: number;
+  platform_id: number;
+  sale_id: number;
+  title: string;
+  description: string;
+  slug: string;
+  tags: string[];
+  pricePrimary: null | string;
+  priceSecondary: null | string;
+  price: null | string;
+  createAt: Date;
+  namePlatform: string;
+  sale: number;
+  url: string;
+  salePrimary: null | string;
+  saleSecondary: null | string;
+  salePrice: null | string;
+}

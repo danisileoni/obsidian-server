@@ -33,7 +33,7 @@ export class Product {
   price: number;
 
   @Column('text', {
-    default: Date(),
+    default: new Date().toISOString(),
   })
   createAt: Date;
 

@@ -38,7 +38,7 @@ export class User {
 
   @Column('text', {
     nullable: false,
-    default: Date(),
+    default: new Date().toISOString(),
   })
   createAt: Date;
 
