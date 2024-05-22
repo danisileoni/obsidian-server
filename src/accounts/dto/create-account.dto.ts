@@ -1,14 +1,7 @@
-import {
-  IsEmail,
-  IsIn,
-  IsNumber,
-  IsOptional,
-  IsString,
-  IsUUID,
-} from 'class-validator';
+import { IsEmail, IsIn, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateAccountDto {
-  @IsUUID()
+  @IsNumber()
   idProduct: string;
 
   @IsNumber()

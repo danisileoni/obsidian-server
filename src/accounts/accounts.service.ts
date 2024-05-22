@@ -33,7 +33,12 @@ export class AccountsService {
       typeAccount,
     } = createAccountDto;
 
-    const accountProduct = await this.productRepository.findOneBy({ id });
+    const accountProduct = await this.productRepository.findOne({
+      relations: {
+        account: true,
+      },
+      where: { id },
+    });
     if (!accountProduct) {
       throw new NotFoundException(`Product not found with id: ${id}`);
     }

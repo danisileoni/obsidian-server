@@ -6,7 +6,6 @@ import {
   Patch,
   Param,
   Delete,
-  ParseUUIDPipe,
 } from '@nestjs/common';
 import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
@@ -23,12 +22,12 @@ export class AccountsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string): Promise<Account> {
+  async findOne(@Param('id') id: string): Promise<Account> {
     return await this.accountsService.findOne(id);
   }
 
   @Get('stock/:id')
-  async stock(@Param('id', ParseUUIDPipe) id: string): Promise<{
+  async stock(@Param('id') id: string): Promise<{
     quantityPrimary: number;
     quantitySecondary: number;
   }> {
@@ -37,7 +36,7 @@ export class AccountsController {
 
   @Patch(':id')
   async update(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id') id: string,
     @Body() updateAccountDto: UpdateAccountDto,
   ): Promise<Account> {
     return await this.accountsService.update(id, updateAccountDto);

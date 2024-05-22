@@ -156,6 +156,7 @@ export class PaymentsService {
           password: this.accountsService.getDecrypt(account.password),
           image_url: account.image_url,
           product_name: account.product_name,
+          platform_name: account.platform_name,
           type_account: account.type_account,
           id: account.id,
         };

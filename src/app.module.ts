@@ -19,7 +19,6 @@ import { SalesModule } from './sales/sales.module';
 import { OrdersModule } from './orders/orders.module';
 import { MailsModule } from './mails/mails.module';
 import { PlatformModule } from './platform/platform.module';
-import { ProductsService } from './info-products/products/products.service';
 
 @Module({
   imports: [
@@ -51,7 +50,7 @@ import { ProductsService } from './info-products/products/products.service';
     PlatformModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService, ProductsService],
+  providers: [AuthService],
   exports: [ConfigModule],
 })
 export class AppModule {}

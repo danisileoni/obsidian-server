@@ -29,7 +29,7 @@ export class OrdersService {
       relations: { account: true },
       where: { id: In(createOrderDto.items.map((item) => item.idProduct)) },
     });
-    if (!products) {
+    if (products.length === 0) {
       throw new NotFoundException(
         `Products not found with id's: ${createOrderDto.items.toString()}`,
       );
@@ -37,10 +37,10 @@ export class OrdersService {
 
     products.forEach((product) => {
       const orderItem = createOrderDto.items.find(
-        (item) => item.idProduct === product.id,
+        (item) => +item.idProduct === +product.id,
       );
       if (!orderItem) {
-        return;
+        throw new NotFoundException(`Product not found`);
       }
 
       const iPrimary = product.account.reduce(
@@ -51,6 +51,11 @@ export class OrdersService {
         (sum, account) => sum + +account.quantitySecondary,
         0,
       );
+
+      console.log({
+        iPrimary,
+        iSecondary,
+      });
 
       if (orderItem.quantityPrimary > iPrimary) {
         throw new NotFoundException(

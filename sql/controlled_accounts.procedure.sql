@@ -1,4 +1,4 @@
-create or replace procedure controlled_accounts (quantity numeric, account_id uuid, order_id uuid, quantity_accounts numeric, type_account text) as $$
+create or replace procedure controlled_accounts (quantity numeric, account_id uuid, quantity_accounts numeric, type_account text) as $$
 declare
 
 begin
