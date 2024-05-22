@@ -4,10 +4,10 @@ import {
   InternalServerErrorException,
 } from '@nestjs/common';
 import axios from 'axios';
+import { type Order } from 'src/orders/entities/order.entity';
 
 import {
   type ConvertAmount,
-  type Item,
   type CancelOrder,
   type PaypalCaptureResponse,
   type PaypalQuery,
@@ -16,7 +16,6 @@ import {
 
 @Injectable()
 export class PaypalService {
-  // TODO: ARREGLA ESTA PORONGA
   private readonly HOST: string;
   private readonly API_CLIENT: string;
   private readonly API_SECRET: string;
@@ -29,26 +28,16 @@ export class PaypalService {
     this.API_URL = process.env.API_URL_PAYPAL;
   }
 
-  async create(
-    {
-      amount,
-      items,
-    }: {
-      amount: number;
-      items: Item[];
-    },
-    orderId: string,
-  ): Promise<PaypalResponse> {
-    const convertUSD = await this.convertUSD(amount, items);
+  async create(items: Order, orderId: string): Promise<PaypalResponse> {
+    const itemsConvertUSD = await this.convertUSD(items);
 
     const body = {
       intent: 'CAPTURE',
       purchase_units: [
         {
-          items: convertUSD.amountUnitsConvert.map((item) => {
+          items: itemsConvertUSD.amountUnitsConvert.map((item) => {
             return {
               name: item.title,
-              description: item.description,
               quantity: item.quantity,
               unit_amount: {
                 currency_code: 'USD',
@@ -58,11 +47,11 @@ export class PaypalService {
           }),
           amount: {
             currency_code: 'USD',
-            value: convertUSD.amountConvert,
+            value: itemsConvertUSD.amountConvert,
             breakdown: {
               item_total: {
                 currency_code: 'USD',
-                value: convertUSD.amountConvert,
+                value: itemsConvertUSD.amountConvert,
               },
             },
           },
@@ -139,10 +128,7 @@ export class PaypalService {
     };
   }
 
-  private async convertUSD(
-    amount: number,
-    items: Item[],
-  ): Promise<ConvertAmount> {
+  private async convertUSD(items: Order): Promise<ConvertAmount> {
     try {
       const { data } = await axios
         .get('https://dolarapi.com/v1/dolares/oficial')
@@ -151,9 +137,38 @@ export class PaypalService {
           throw new InternalServerErrorException('Check logs server');
         });
 
-      const amountUnitsConvert = items.map((item) => {
-        item.amount = parseFloat((item.amount / data.venta).toFixed(2));
-        return item;
+      const amountUnitsConvert = items.details.map((item) => {
+        return {
+          title: item.product.infoProduct.title,
+          description: item.product.infoProduct.description,
+          quantity: (() => {
+            if (item.quantityPrimary > 0) {
+              return item.quantityPrimary;
+            }
+            if (item.quantitySecondary > 0) {
+              return item.quantitySecondary;
+            }
+            if (!(item.quantityPrimary > 0 && item.quantitySecondary > 0)) {
+              return item.quantitySteam;
+            }
+          })(),
+          amount: (() => {
+            if (item.quantityPrimary > 0) {
+              return parseFloat(
+                (item.product.pricePrimary / data.venta).toFixed(2),
+              );
+            }
+            if (item.quantitySecondary > 0) {
+              return parseFloat(
+                (item.product.priceSecondary / data.venta).toFixed(2),
+              );
+            }
+            if (!(item.quantityPrimary > 0 && item.quantitySecondary > 0)) {
+              return parseFloat((item.product.price / data.venta).toFixed(2));
+            }
+            throw new InternalServerErrorException();
+          })(),
+        };
       });
 
       let amountConvert: number = 0;

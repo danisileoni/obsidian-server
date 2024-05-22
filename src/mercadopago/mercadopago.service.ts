@@ -2,10 +2,12 @@ import {
   BadRequestException,
   Inject,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Payment } from 'mercadopago';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
+import { type Order } from 'src/orders/entities/order.entity';
 import { type MercadoPagoArs } from 'src/types';
 import { v4 as uuid } from 'uuid';
 
@@ -16,27 +18,60 @@ export class MercadopagoService {
     private readonly payment: Payment,
   ) {}
 
-  async createOrder({
-    token,
-    items,
-    amount,
-    email,
-    method,
-    type,
-    numbers,
-  }: MercadoPagoArs): Promise<PaymentResponse> {
+  async createOrder(
+    { token, email, method, type, numbers }: MercadoPagoArs,
+    items: Order,
+  ): Promise<PaymentResponse> {
     try {
+      const amount = items.details.reduce((sum, item) => {
+        if (item.quantityPrimary > 0) {
+          return sum + item.product.pricePrimary;
+        }
+        if (item.quantitySecondary > 0) {
+          return sum + item.product.priceSecondary;
+        }
+        if (!(item.quantityPrimary > 0 && item.quantitySecondary > 0)) {
+          return sum + item.product.price;
+        }
+        throw new InternalServerErrorException();
+      }, 0);
+
       const order = await this.payment.create({
         body: {
           additional_info: {
-            items: items.map((item) => {
+            items: items.details.map((item) => {
               return {
                 id: uuid(),
-                title: item.title,
-                description: item.description,
+                title: item.product.infoProduct.title,
                 category_id: 'game_digital',
-                quantity: item.quantity,
-                unit_price: item.amount,
+                quantity: (() => {
+                  if (item.quantityPrimary > 0) {
+                    return item.quantityPrimary;
+                  }
+                  if (item.quantitySecondary > 0) {
+                    return item.quantitySecondary;
+                  }
+                  if (
+                    !(item.quantityPrimary > 0 && item.quantitySecondary > 0)
+                  ) {
+                    return item.quantitySteam;
+                  }
+                  throw new InternalServerErrorException();
+                })(),
+                unit_price: (() => {
+                  if (item.quantityPrimary > 0) {
+                    return item.product.pricePrimary;
+                  }
+                  if (item.quantitySecondary > 0) {
+                    return item.product.priceSecondary;
+                  }
+                  if (
+                    !(item.quantityPrimary > 0 && item.quantitySecondary > 0)
+                  ) {
+                    return item.product.price;
+                  }
+                  throw new InternalServerErrorException();
+                })(),
               };
             }),
           },

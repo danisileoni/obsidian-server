@@ -1,6 +1,5 @@
 export interface MercadoPagoArs {
   token: string;
-  items: Item[];
   amount: number;
   email: string;
   method: string;
@@ -212,7 +211,7 @@ export interface ItemEmailPaid {
   platform_name: string;
   email: string;
   password: string;
-  id: string;
+  id_account: string;
 }
 
 export interface ViewProduct {

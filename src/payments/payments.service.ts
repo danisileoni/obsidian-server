@@ -51,18 +51,32 @@ export class PaymentsService {
       throw new BadRequestException('Property not found in body');
     }
 
+    const items = await this.orderRepository.findOne({
+      relations: {
+        details: {
+          product: {
+            infoProduct: true,
+          },
+        },
+      },
+      where: { id: idOrder },
+    });
+
+    if (!items) {
+      throw new NotFoundException(`Order not found with id: ${idOrder}`);
+    }
+
     if (paymentGateway === 'mercadopago') {
       order = await this.mercadopagoService
-        .createOrder(createPaymentDto)
+        .createOrder(createPaymentDto, items)
         .catch((error) => {
           throw new BadRequestException(error);
         });
-
       return await this.assignedNewPayment(idOrder, order);
     }
 
     if (paymentGateway === 'paypal') {
-      order = await this.paypal(createPaymentDto, idOrder);
+      order = await this.paypal(items, idOrder);
     }
 
     return order;
@@ -88,10 +102,7 @@ export class PaymentsService {
     return payments;
   }
 
-  private async paypal(
-    data: CreatePaymentDto,
-    userId: string,
-  ): Promise<PaypalResponse> {
+  private async paypal(data: Order, userId: string): Promise<PaypalResponse> {
     const order = await this.paypalService
       .create(data, userId)
       .catch((error) => {
@@ -147,7 +158,7 @@ export class PaymentsService {
       const accounts: ItemEmailPaid[] = await queryRunner.query(`
       SELECT
         *
-      FROM return_accounts_paid('${idOrder}');
+      FROM return_accounts_paid(${+idOrder});
       `);
 
       const deCryptAccount: ItemEmailPaid[] = accounts.map((account) => {
@@ -158,7 +169,7 @@ export class PaymentsService {
           product_name: account.product_name,
           platform_name: account.platform_name,
           type_account: account.type_account,
-          id: account.id,
+          id_account: account.id_account,
         };
       });
 
@@ -172,7 +183,7 @@ export class PaymentsService {
       const accountPaid = accounts.map((account) => {
         return this.accountPaidRepository.create({
           payment,
-          account: { id: account.id },
+          account: { id: account.id_account },
         });
       });
 

@@ -52,11 +52,6 @@ export class OrdersService {
         0,
       );
 
-      console.log({
-        iPrimary,
-        iSecondary,
-      });
-
       if (orderItem.quantityPrimary > iPrimary) {
         throw new NotFoundException(
           'the product does not have sufficient primary stock',

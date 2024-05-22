@@ -9,7 +9,7 @@ export class ParseSharpPipe
     if (images) {
       const filesBuffers = await Promise.all(
         images.map(async (img) => {
-          return await sharp(img.buffer).resize(400).webp().toBuffer();
+          return await sharp(img.buffer).resize(720).webp().toBuffer();
         }),
       );
       return filesBuffers;

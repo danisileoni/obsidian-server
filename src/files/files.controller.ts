@@ -4,7 +4,6 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
-import { FilesService } from './files.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { fileFilter } from '../common/helpers/fileFilter.helper';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -13,10 +12,7 @@ import { ParseSharpPipe } from '../common/pipes/sharp-pipe.pipe';
 
 @Controller('files')
 export class FilesController {
-  constructor(
-    private readonly filesService: FilesService,
-    private readonly cloudinaryService: CloudinaryService,
-  ) {}
+  constructor(private readonly cloudinaryService: CloudinaryService) {}
 
   @Post('product')
   @UseInterceptors(
