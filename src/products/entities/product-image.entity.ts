@@ -12,7 +12,6 @@ export class ProductImage {
   url: string;
 
   @ManyToOne(() => InfoProduct, (infoProduct) => infoProduct.images, {
-    onDelete: 'CASCADE',
     nullable: false,
   })
   infoProduct: InfoProduct;

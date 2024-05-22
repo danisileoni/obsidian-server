@@ -42,7 +42,6 @@ export class SalesService {
       await this.saleRepository.save(sale);
 
       await queryRunner.query('REFRESH MATERIALIZED view product_materialized');
-      await queryRunner.commitTransaction();
 
       return sale;
     } catch (error) {
@@ -85,6 +84,9 @@ export class SalesService {
   }
 
   async removeTimer(): Promise<{ message: string }> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+
     const timer = await this.timerRepository.find();
 
     if (timer.length === 0) {
@@ -92,6 +94,8 @@ export class SalesService {
     }
 
     try {
+      await queryRunner.query('TRUNCATE TABLE sale');
+
       await this.timerRepository.remove(timer[0]);
       return {
         message: 'has been remove correctly',
@@ -99,6 +103,8 @@ export class SalesService {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Check server logs');
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -116,7 +122,6 @@ export class SalesService {
       await this.saleRepository.remove(sale);
 
       await queryRunner.query('REFRESH MATERIALIZED view product_materialized');
-      await queryRunner.commitTransaction();
 
       return {
         message: `has been remove sale with id: ${id} correctly`,

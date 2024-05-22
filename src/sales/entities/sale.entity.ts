@@ -33,6 +33,18 @@ export class Sale {
   })
   salePrice: number;
 
+  @Column('text', {
+    nullable: false,
+    default: new Date(),
+  })
+  finallySaleAt: Date;
+
+  @Column('text', {
+    nullable: false,
+    default: new Date(),
+  })
+  createAt: Date;
+
   @OneToOne(() => Product, (product) => product.sale)
   @JoinColumn()
   product: Product;

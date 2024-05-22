@@ -72,20 +72,20 @@ export class ProductsService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<ViewProduct> {
+  async findAll(paginationDto: PaginationDto): Promise<InfoProduct[]> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
     const { limit, offset } = paginationDto;
 
     try {
-      const products = await queryRunner.query(`
+      const products: ViewProduct[] = await queryRunner.query(`
         SELECT * FROM product_materialized
         OFFSET ${offset}
         LIMIT ${limit}
       `);
 
-      return products;
+      return this.transformObjectProduct(products);
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Check logs server');
@@ -94,8 +94,8 @@ export class ProductsService {
     }
   }
 
-  async findOne(id: string): Promise<ViewProduct> {
-    let product: ViewProduct;
+  async findOne(id: string): Promise<InfoProduct> {
+    let product: ViewProduct[];
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
@@ -107,13 +107,13 @@ export class ProductsService {
         `,
       );
 
-      product = product[0];
+      const transformProduct = this.transformObjectProduct(product);
 
-      if (!product) {
+      if (!transformProduct[0]) {
         throw new NotFoundException();
       }
 
-      return product;
+      return transformProduct[0];
     } catch (error) {
       if (error.status === 404) {
         throw new NotFoundException(`Product not found with id: ${id}`);
@@ -179,5 +179,52 @@ export class ProductsService {
       console.log(error);
       throw new InternalServerErrorException('Check log server');
     }
+  }
+
+  private transformObjectProduct(data: ViewProduct[]): InfoProduct[] {
+    const groupedData = data.reduce((acc, row) => {
+      const infoProductId = row.info_product_id;
+
+      if (!acc[infoProductId]) {
+        acc[infoProductId] = {
+          id: infoProductId,
+          title: row.title,
+          description: row.description,
+          slug: row.slug,
+          tags: row.tags,
+          productImage: {
+            id: row.product_image_id,
+            url: row.url,
+          },
+          products: [],
+        };
+      }
+
+      const product = {
+        id: row.product_id,
+        pricePrimary: row.pricePrimary,
+        priceSecondary: row.priceSecondary,
+        price: row.price,
+        createAt: row.createAt,
+        platform: {
+          id: row.platform_id,
+          namePlatform: row.namePlatform,
+        },
+        sale: {
+          id: row.sale_id,
+          sale: row.sale,
+          salePrimary: row.salePrimary,
+          saleSecondary: row.saleSecondary,
+          salePrice: row.salePrice,
+          finallySaleAt: row.finallySaleAt,
+        },
+      };
+
+      acc[infoProductId].products.push(product);
+
+      return acc;
+    }, {});
+
+    return Object.values(groupedData);
   }
 }

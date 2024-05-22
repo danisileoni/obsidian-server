@@ -39,10 +39,12 @@ export class Product {
 
   @OneToMany(() => Account, (account) => account.product, {
     cascade: true,
+    onDelete: 'CASCADE',
   })
   account: Account[];
 
   @OneToOne(() => Sale, (sale) => sale.product, {
+    onDelete: 'CASCADE',
     eager: true,
     cascade: true,
   })

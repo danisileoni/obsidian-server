@@ -22,7 +22,6 @@ import { type InfoProduct } from './entities/info-product.entity';
 import { CreateInfoProductDto } from './dto/create-info-product.dto';
 import { InfoProductsService } from './info-products.service';
 import { UpdateInfoProductDto } from './dto/update-info-product.dto';
-import { type ViewProduct } from 'src/types';
 
 @Controller('products')
 export class ProductsController {
@@ -95,12 +94,12 @@ export class ProductsController {
   @Get()
   async findAllProduct(
     @Query() paginationDto: PaginationDto,
-  ): Promise<ViewProduct> {
+  ): Promise<InfoProduct[]> {
     return await this.productsService.findAll(paginationDto);
   }
 
   @Get(':id')
-  async findOneProduct(@Param('id') id: string): Promise<ViewProduct> {
+  async findOneProduct(@Param('id') id: string): Promise<InfoProduct> {
     return await this.productsService.findOne(id);
   }
 

@@ -234,4 +234,5 @@ export interface ViewProduct {
   salePrimary: null | string;
   saleSecondary: null | string;
   salePrice: null | string;
+  finallySaleAt: null | string;
 }
