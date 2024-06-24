@@ -30,5 +30,6 @@ module.exports = {
     '@typescript-eslint/naming-convention': 'off',
     '@typescript-eslint/no-misused-promises': 'off',
     'array-callback-return': 'off',
+    '@typescript-eslint/prefer-optional-chain': 'off',
   },
 };

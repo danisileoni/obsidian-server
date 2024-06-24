@@ -1,17 +1,20 @@
+/* eslint-disable @typescript-eslint/restrict-template-expressions */
 import {
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Product } from './entities';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { InfoProduct } from './entities/info-product.entity';
 import { type CreateProductDto } from './dto/create-product.dto';
 import { Platform } from 'src/platform/entities/platform.entity';
-import { type PaginationDto } from '../common/dtos/pagination.dto';
-import { type ViewProduct } from 'src/types';
 import { type UpdateProductDto } from './dto/update-product.dto';
+import { type FilterProductDto } from './dto/filters-product.dto';
+import { type AllProducts } from 'src/types';
+import { type SelectProductDto } from './dto/select-product.dto';
+import { type PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Injectable()
 export class ProductsService {
@@ -72,52 +75,207 @@ export class ProductsService {
     }
   }
 
-  async findAll(paginationDto: PaginationDto): Promise<InfoProduct[]> {
+  async findSelectedProducts(
+    selectProductDto: SelectProductDto,
+  ): Promise<InfoProduct[]> {
+    const { productsId } = selectProductDto;
+    console.log(productsId);
+
+    const products = await this.infoProductRepository.find({
+      relations: { product: { platform: true }, images: true },
+      where: {
+        product: {
+          id: In(productsId),
+        },
+      },
+    });
+
+    return products;
+  }
+
+  async findAll(filterProductDto: FilterProductDto): Promise<AllProducts> {
+    const {
+      platform,
+      tags = [],
+      maxPrice,
+      minPrice,
+      sale,
+      limit,
+      offset,
+      search,
+    } = filterProductDto;
+
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
-    const { limit, offset } = paginationDto;
+    const productConditions: string[] = [];
+    const materializedConditions: string[] = [];
+    const parameters: any[] = [];
+
+    if (sale) {
+      productConditions.push(`product->'sale'->>'sale' IS NOT null`);
+    }
+    if (minPrice) {
+      productConditions.push(`(
+        COALESCE(product->>'price')::NUMERIC >= $${parameters.length + 1}
+        OR COALESCE(product->>'pricePrimary')::NUMERIC >= $${parameters.length + 1}
+        OR COALESCE(product->>'priceSecondary')::NUMERIC >= $${parameters.length + 1}
+      )`);
+      parameters.push(+minPrice);
+    }
+    if (maxPrice) {
+      productConditions.push(`(
+        COALESCE(product->>'price')::NUMERIC <= $${parameters.length + 1}
+        OR COALESCE(product->>'pricePrimary')::NUMERIC <= $${parameters.length + 1}
+        OR COALESCE(product->>'priceSecondary')::NUMERIC <= $${parameters.length + 1}
+      )`);
+      parameters.push(+maxPrice);
+    }
+    if (platform) {
+      productConditions.push(
+        `product->'platform'->>'namePlatform' = $${parameters.length + 1}`,
+      );
+      parameters.push(platform);
+    }
+    if (tags.length > 0) {
+      const tagConditions = tags
+        .map((tag, index) => `tag ILIKE $${parameters.length + 1 + index}`)
+        .join(' OR ');
+      productConditions.push(`EXISTS (
+        SELECT 1
+        FROM UNNEST(tags) AS tag
+        WHERE ${tagConditions}
+      )`);
+      parameters.push(...tags.map((tag) => `%${tag}%`));
+    }
+    if (search) {
+      materializedConditions.push(
+        `product_materialized.title ILIKE $${parameters.length + 1}`,
+      );
+      parameters.push(`${search}%`);
+    }
+
+    const productWhereClause =
+      productConditions.length > 0
+        ? `WHERE ${productConditions.join(' AND ')}`
+        : '';
+
+    const materializedWhereClause =
+      materializedConditions.length > 0
+        ? `AND ${materializedConditions.join(' AND ')}`
+        : '';
 
     try {
-      const products: ViewProduct[] = await queryRunner.query(`
-        SELECT * FROM product_materialized
-        OFFSET ${offset}
-        LIMIT ${limit}
-      `);
+      const productsQuery = `
+        SELECT *
+        FROM product_materialized
+        WHERE EXISTS (
+          SELECT 1
+          FROM jsonb_array_elements(product_materialized.products) AS product
+          ${productWhereClause}
+        )
+        ${materializedWhereClause}
+        ORDER BY "createAt"
+        LIMIT $${parameters.length + 1}
+        OFFSET $${parameters.length + 2}`;
 
-      return this.transformObjectProduct(products);
+      const countsQuery = `
+        SELECT COUNT(*) as count
+        FROM product_materialized
+        WHERE EXISTS (
+          SELECT 1
+          FROM jsonb_array_elements(product_materialized.products) AS product
+          ${productWhereClause}
+        )
+        ${materializedWhereClause}`;
+
+      const productsParameters = [...parameters, limit, offset];
+      const countsParameters = [...parameters];
+
+      const [products, [{ count: countsProducts }]] = await Promise.all([
+        queryRunner.query(productsQuery, productsParameters),
+        queryRunner.query(countsQuery, countsParameters),
+      ]);
+
+      const totalPages: number = Math.ceil(+countsProducts / limit);
+      const currentPage: number = Math.floor(offset / limit + 1);
+      const hasNextPage: boolean = currentPage < totalPages;
+
+      return {
+        products,
+        countsProducts: +countsProducts,
+        totalPages,
+        currentPage,
+        hasNextPage,
+      };
     } catch (error) {
       console.log(error);
-      throw new InternalServerErrorException('Check logs server');
+      throw new InternalServerErrorException('Check server logs');
     } finally {
       await queryRunner.release();
     }
   }
 
-  async findOne(id: string): Promise<InfoProduct> {
-    let product: ViewProduct[];
+  async findOne(term: string): Promise<InfoProduct> {
+    let product: InfoProduct[];
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
     try {
-      product = await queryRunner.query(
-        `
-        SELECT * FROM product_materialized
-        WHERE product_materialized.product_id = ${id}
-        `,
-      );
+      if (!isNaN(+term)) {
+        product = await queryRunner.query(
+          `
+          SELECT * FROM product_materialized
+          WHERE product_materialized.product_id = $1
+          `,
+          [term],
+        );
+      } else {
+        product = await queryRunner.query(
+          `
+          SELECT * FROM product_materialized
+          WHERE product_materialized.slug = '${term}'
+          `,
+        );
+      }
 
-      const transformProduct = this.transformObjectProduct(product);
-
-      if (!transformProduct[0]) {
+      if (!product[0]) {
         throw new NotFoundException();
       }
 
-      return transformProduct[0];
+      return product[0];
     } catch (error) {
       if (error.status === 404) {
-        throw new NotFoundException(`Product not found with id: ${id}`);
+        throw new NotFoundException(`Product not found with term: ${term}`);
       }
+      console.log(error);
+      throw new InternalServerErrorException('Check log server');
+    } finally {
+      await queryRunner.release();
+    }
+  }
+
+  async searchProducts(
+    term: string,
+    paginationDto: PaginationDto,
+  ): Promise<InfoProduct[]> {
+    const { limit, offset } = paginationDto;
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+
+    try {
+      const product = await queryRunner.query(
+        `
+          SELECT * FROM product_materialized
+          WHERE product_materialized."title" ILIKE '%${term}%'
+          LIMIT $1
+          OFFSET $2
+          `,
+        [limit, offset],
+      );
+
+      return product;
+    } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Check log server');
     } finally {
@@ -144,7 +302,7 @@ export class ProductsService {
 
       await this.productRepository.save(product);
 
-      await queryRunner.query('REFRESH MATERIALIZED view product_materialized');
+      await queryRunner.query('refresh materialized view product_materialized');
 
       return product;
     } catch (error) {
@@ -179,52 +337,5 @@ export class ProductsService {
       console.log(error);
       throw new InternalServerErrorException('Check log server');
     }
-  }
-
-  private transformObjectProduct(data: ViewProduct[]): InfoProduct[] {
-    const groupedData = data.reduce((acc, row) => {
-      const infoProductId = row.info_product_id;
-
-      if (!acc[infoProductId]) {
-        acc[infoProductId] = {
-          id: infoProductId,
-          title: row.title,
-          description: row.description,
-          slug: row.slug,
-          tags: row.tags,
-          productImage: {
-            id: row.product_image_id,
-            url: row.url,
-          },
-          products: [],
-        };
-      }
-
-      const product = {
-        id: row.product_id,
-        pricePrimary: row.pricePrimary,
-        priceSecondary: row.priceSecondary,
-        price: row.price,
-        createAt: row.createAt,
-        platform: {
-          id: row.platform_id,
-          namePlatform: row.namePlatform,
-        },
-        sale: {
-          id: row.sale_id,
-          sale: row.sale,
-          salePrimary: row.salePrimary,
-          saleSecondary: row.saleSecondary,
-          salePrice: row.salePrice,
-          finallySaleAt: row.finallySaleAt,
-        },
-      };
-
-      acc[infoProductId].products.push(product);
-
-      return acc;
-    }, {});
-
-    return Object.values(groupedData);
   }
 }

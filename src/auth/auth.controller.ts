@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/dot-notation */
 import {
   Body,
   Controller,
@@ -6,17 +7,21 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { User } from 'src/users/entities/user.entity';
 import { LoginUserDto } from './dto/login-user.dto';
 import { UpdateUserDto } from 'src/users/dto/update-user.dto';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { GetUser } from './decorators/get-user.decorator';
 import { Auth } from './decorators/auth.decorator';
 import { ValidRoles } from './interfaces/valid-roles.enum';
+import { GoogleAuthGuard } from './guards/google-auth.guard';
+import { RefreshTokenGuard } from './guards/refreshToken.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -36,6 +41,62 @@ export class AuthController {
     @Res() res: Response,
   ): Promise<Response<User>> {
     return await this.authService.login(loginUserDto, res);
+  }
+
+  @Get('google/login')
+  @UseGuards(GoogleAuthGuard)
+  async loginGoogle(@Res() res: Response): Promise<string | any> {
+    return res.status(200);
+  }
+
+  @Get('google/redirect')
+  @UseGuards(GoogleAuthGuard)
+  async loginGoogleRedirect(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<void> {
+    try {
+      const user = req.user as User;
+
+      const tokens = await this.authService.jwtSing(user);
+      await this.authService.updateRtHash(user.id, tokens.refreshToken);
+      res.cookie('token', tokens.accessToken, {
+        httpOnly: false,
+        sameSite: 'lax',
+        secure: true,
+      });
+      res.cookie('rs-token', tokens.refreshToken, {
+        httpOnly: false,
+        sameSite: 'lax',
+        secure: true,
+      });
+      res.redirect('http://localhost:5173');
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  @UseGuards(RefreshTokenGuard)
+  @Post('/refresh')
+  async refreshTokens(
+    @GetUser() user: { id: string; refreshToken: string },
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.authService.refreshTokens(user.id, user.refreshToken, res);
+  }
+
+  @Get('verify-access')
+  async verifyAccessToken(@Req() req: Request): Promise<any> {
+    const headers = req.header['authorization'];
+    const token: string = headers && headers.split(' ')[0];
+    return await this.authService.verifyAccessToken(token);
+  }
+
+  @Get('verify-refresh')
+  async verifyRefreshToken(@Req() req: Request): Promise<any> {
+    const headers = req.header['authorization'];
+    const token: string = headers && headers.split(' ')[0];
+    return await this.authService.verifyRefreshToken(token);
   }
 
   @Patch(':id')

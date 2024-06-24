@@ -53,6 +53,11 @@ export class User {
   })
   isActive: boolean;
 
+  @Column('text', {
+    nullable: true,
+  })
+  hashRefreshToken: string;
+
   @OneToMany(() => Order, (order) => order.user)
   orders: Order[];
 

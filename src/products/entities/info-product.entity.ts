@@ -34,6 +34,11 @@ export class InfoProduct {
   })
   tags: string[];
 
+  @Column('text', {
+    default: new Date(),
+  })
+  createAt: string;
+
   @OneToMany(() => ProductImage, (productImage) => productImage.infoProduct, {
     cascade: true,
     onDelete: 'CASCADE',

@@ -4,7 +4,7 @@ import { InfoProduct } from './info-product.entity';
 @Entity()
 export class ProductImage {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: string;
 
   @Column('text', {
     nullable: false,

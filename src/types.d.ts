@@ -1,3 +1,5 @@
+import { type InfoProduct } from './products/entities/info-product.entity';
+
 export interface MercadoPagoArs {
   token: string;
   amount: number;
@@ -217,7 +219,6 @@ export interface ItemEmailPaid {
 export interface ViewProduct {
   info_product_id: string;
   product_id: number;
-  product_image_id: number;
   platform_id: number;
   sale_id: number;
   title: string;
@@ -230,9 +231,27 @@ export interface ViewProduct {
   createAt: Date;
   namePlatform: string;
   sale: number;
-  url: string;
+  product_images: string[];
   salePrimary: null | string;
   saleSecondary: null | string;
   salePrice: null | string;
   finallySaleAt: null | string;
+}
+
+export interface Stock {
+  stockPs4: StockPS;
+  stockPs5: StockPS;
+}
+
+export interface StockPS {
+  primary: number;
+  secondary: number;
+}
+
+export interface AllProducts {
+  products: InfoProduct[];
+  countsProducts: number;
+  totalPages: number;
+  currentPage: number;
+  hasNextPage: boolean;
 }

@@ -11,6 +11,7 @@ import { AccountsService } from './accounts.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { type Account } from './entities/account.entity';
+import { type Stock } from 'src/types';
 
 @Controller('accounts')
 export class AccountsController {
@@ -27,10 +28,7 @@ export class AccountsController {
   }
 
   @Get('stock/:id')
-  async stock(@Param('id') id: string): Promise<{
-    quantityPrimary: number;
-    quantitySecondary: number;
-  }> {
+  async stock(@Param('id') id: string): Promise<Stock> {
     return await this.accountsService.stock(id);
   }
 

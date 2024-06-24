@@ -20,5 +20,5 @@ export class CreatePaymentDto {
   numbers: string;
 
   @IsString()
-  paymentGateway?: string;
+  paymentGateway: string;
 }

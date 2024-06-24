@@ -9,6 +9,6 @@ import { Payment } from 'src/payments/entities/payment.entity';
   controllers: [UsersController],
   providers: [UsersService],
   imports: [TypeOrmModule.forFeature([User, Payment])],
-  exports: [TypeOrmModule],
+  exports: [UsersService, TypeOrmModule],
 })
 export class UsersModule {}

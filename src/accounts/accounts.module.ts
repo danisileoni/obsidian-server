@@ -7,11 +7,12 @@ import { ProductsModule } from 'src/products/products.module';
 import { Product } from 'src/products/entities';
 import { ConfigModule } from '@nestjs/config';
 import { AccountPaid } from './entities/accounts-paid.entity';
+import { InfoProduct } from 'src/products/entities/info-product.entity';
 
 @Module({
   imports: [
     ConfigModule,
-    TypeOrmModule.forFeature([Account, Product, AccountPaid]),
+    TypeOrmModule.forFeature([Account, Product, AccountPaid, InfoProduct]),
     ProductsModule,
   ],
   exports: [AccountsModule, AccountsService],

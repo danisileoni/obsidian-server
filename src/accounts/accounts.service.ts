@@ -8,10 +8,11 @@ import { type CreateAccountDto } from './dto/create-account.dto';
 import { type UpdateAccountDto } from './dto/update-account.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from './entities/account.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 import { Product } from 'src/products/entities';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
+import { type Stock } from 'src/types';
 
 @Injectable()
 export class AccountsService {
@@ -20,6 +21,7 @@ export class AccountsService {
     private readonly accountRepository: Repository<Account>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    private readonly dataSource: DataSource,
     private readonly configService: ConfigService,
   ) {}
 
@@ -64,41 +66,44 @@ export class AccountsService {
     }
   }
 
-  async stock(
-    id: string,
-  ): Promise<{ quantityPrimary: number; quantitySecondary: number }> {
-    const accounts = await this.accountRepository.find({
-      where: {
-        product: {
-          id,
+  async stock(id: string): Promise<Stock> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+
+    try {
+      const stockSQL = await queryRunner.query(`
+        SELECT
+          info_product.id,
+          SUM(CASE WHEN account."typeAccount"  = 'PlayStation 5' AND account."quantityPrimary" > 0 THEN account."quantityPrimary"  ELSE 0 END) AS primary_ps5_stock,
+          SUM(CASE WHEN account."typeAccount" = 'PlayStation 5' AND account."quantitySecondary" > 0 THEN account."quantitySecondary"  ELSE 0 END) AS secondary_ps5_stock,
+          SUM(CASE WHEN account."typeAccount" = 'PlayStation 4' AND account."quantityPrimary" > 0 THEN account."quantityPrimary"  ELSE 0 END) AS primary_ps4_stock,
+          SUM(CASE WHEN account."typeAccount" = 'PlayStation 4' AND account."quantitySecondary" > 0 THEN account."quantitySecondary"  ELSE 0 END) AS secondary_ps4_stock
+        FROM
+            info_product
+        LEFT JOIN product ON product."infoProductId" = info_product.id
+        LEFT JOIN account ON account."productId" = product.id
+        WHERE
+            info_product.id = '${id}'
+        GROUP BY
+            info_product.id;
+      `);
+
+      return {
+        stockPs4: {
+          primary: +stockSQL[0].primary_ps4_stock,
+          secondary: +stockSQL[0].secondary_ps4_stock,
         },
-      },
-    });
-
-    let stock: { quantityPrimary: number; quantitySecondary: number };
-
-    const accountFilterPS = accounts.filter(
-      (account) => account.quantityPrimary && account.quantitySecondary,
-    );
-
-    if (accountFilterPS) {
-      stock = accounts.reduce(
-        (acc, obj) => {
-          return {
-            quantityPrimary: +acc.quantityPrimary + +obj.quantityPrimary,
-            quantitySecondary: +acc.quantitySecondary + +obj.quantitySecondary,
-          };
+        stockPs5: {
+          primary: +stockSQL[0].primary_ps5_stock,
+          secondary: +stockSQL[0].secondary_ps5_stock,
         },
-        { quantityPrimary: 0, quantitySecondary: 0 },
-      );
-    } else {
-      stock = {
-        quantityPrimary: 0,
-        quantitySecondary: 0,
       };
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Check log server');
+    } finally {
+      await queryRunner.release();
     }
-
-    return stock;
   }
 
   async findOne(id: string): Promise<Account> {

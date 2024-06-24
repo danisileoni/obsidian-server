@@ -47,10 +47,6 @@ export class PaymentsService {
     let order: PaymentResponse | PaypalResponse;
     const { paymentGateway } = createPaymentDto;
 
-    if (!paymentGateway) {
-      throw new BadRequestException('Property not found in body');
-    }
-
     const items = await this.orderRepository.findOne({
       relations: {
         details: {

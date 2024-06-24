@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { type CloudinaryResponse } from './cloudinary-response';
@@ -15,22 +16,29 @@ export class CloudinaryService {
       throw new NotFoundException('Images Not found');
     }
 
-    return await new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'products',
-          public_id: uuid(),
-        },
-        (error, result) => {
-          if (error) {
-            reject(error);
-            throw new BadRequestException('Error uploading file');
-          } else {
-            resolve(result);
-          }
-        },
+    try {
+      return await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          {
+            folder: 'products',
+            public_id: uuid(),
+          },
+          (error, result) => {
+            if (error) {
+              reject(error);
+              throw new BadRequestException('Error uploading file');
+            } else {
+              resolve(result);
+            }
+          },
+        );
+        Readable.from(Buffer.from(file)).pipe(uploadStream);
+      });
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Error uploading file | Check logs server',
       );
-      Readable.from(Buffer.from(file)).pipe(uploadStream);
-    });
+    }
   }
 }

@@ -128,7 +128,7 @@ export class InfoProductsService {
         for (const idImg of idImage) {
           await queryRunner.manager.delete(ProductImage, { id: idImg });
           infoProduct.images = infoProduct.images.filter(
-            (img) => img.id !== idImg,
+            (img) => +img.id !== idImg,
           );
         }
       }

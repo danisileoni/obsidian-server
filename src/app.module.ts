@@ -19,6 +19,7 @@ import { SalesModule } from './sales/sales.module';
 import { OrdersModule } from './orders/orders.module';
 import { MailsModule } from './mails/mails.module';
 import { PlatformModule } from './platform/platform.module';
+import { PassportModule } from '@nestjs/passport';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { PlatformModule } from './platform/platform.module';
       // TODO: in production false
       synchronize: true,
     }),
+    PassportModule.register({ session: true }),
     UsersModule,
     AuthModule,
     ProductsModule,

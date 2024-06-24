@@ -17,11 +17,13 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { fileFilter } from 'src/common/helpers/fileFilter.helper';
 import { ParseSharpPipe } from 'src/common/pipes/sharp-pipe.pipe';
 import { type Product } from './entities';
-import { PaginationDto } from '../common/dtos/pagination.dto';
 import { type InfoProduct } from './entities/info-product.entity';
 import { CreateInfoProductDto } from './dto/create-info-product.dto';
 import { InfoProductsService } from './info-products.service';
 import { UpdateInfoProductDto } from './dto/update-info-product.dto';
+import { FilterProductDto } from './dto/filters-product.dto';
+import { SelectProductDto } from './dto/select-product.dto';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Controller('products')
 export class ProductsController {
@@ -51,6 +53,14 @@ export class ProductsController {
   @Get('info-products/:term')
   async findOneInfoProduct(@Param('term') term: string): Promise<InfoProduct> {
     return await this.infoProductsService.findOne(term);
+  }
+
+  @Get('search/:term')
+  async searchProducts(
+    @Param('term') term: string,
+    @Query() paginationDto: PaginationDto,
+  ): Promise<InfoProduct[]> {
+    return await this.productsService.searchProducts(term, paginationDto);
   }
 
   @Patch('info-products/:id')
@@ -91,16 +101,25 @@ export class ProductsController {
     );
   }
 
-  @Get()
-  async findAllProduct(
-    @Query() paginationDto: PaginationDto,
+  @Get('select/products')
+  async findSelectedProducts(
+    @Query()
+    selectProductDto: SelectProductDto,
   ): Promise<InfoProduct[]> {
-    return await this.productsService.findAll(paginationDto);
+    return await this.productsService.findSelectedProducts(selectProductDto);
   }
 
-  @Get(':id')
-  async findOneProduct(@Param('id') id: string): Promise<InfoProduct> {
-    return await this.productsService.findOne(id);
+  @Get()
+  async findAllProduct(@Query() filterProductDto: FilterProductDto): Promise<{
+    products: InfoProduct[];
+    countsProducts: number;
+  }> {
+    return await this.productsService.findAll(filterProductDto);
+  }
+
+  @Get(':term')
+  async findOneProduct(@Param('term') term: string): Promise<InfoProduct> {
+    return await this.productsService.findOne(term);
   }
 
   @Patch(':id')
