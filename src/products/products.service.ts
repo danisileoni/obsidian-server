@@ -79,7 +79,6 @@ export class ProductsService {
     selectProductDto: SelectProductDto,
   ): Promise<InfoProduct[]> {
     const { productsId } = selectProductDto;
-    console.log(productsId);
 
     const products = await this.infoProductRepository.find({
       relations: { product: { platform: true }, images: true },
