@@ -87,15 +87,15 @@ export class AuthController {
 
   @Get('verify-access')
   async verifyAccessToken(@Req() req: Request): Promise<any> {
-    const headers = req.header['authorization'];
-    const token: string = headers && headers.split(' ')[0];
+    const headers = req.headers['authorization'];
+    const token: string = headers && headers.split(' ')[1];
     return await this.authService.verifyAccessToken(token);
   }
 
   @Get('verify-refresh')
   async verifyRefreshToken(@Req() req: Request): Promise<any> {
-    const headers = req.header['authorization'];
-    const token: string = headers && headers.split(' ')[0];
+    const headers = req.headers['authorization'];
+    const token: string = headers && headers.split(' ')[1];
     return await this.authService.verifyRefreshToken(token);
   }
 

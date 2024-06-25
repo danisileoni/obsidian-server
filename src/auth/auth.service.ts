@@ -216,10 +216,9 @@ export class AuthService {
 
   async verifyAccessToken(accessToken: string): Promise<any> {
     try {
-      const decoded = this.jwtService.verify(
-        accessToken,
-        this.configService.get('JWT_SECRET'),
-      );
+      const decoded = await this.jwtService.verifyAsync(accessToken, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
 
       return decoded;
     } catch (error) {
@@ -229,10 +228,9 @@ export class AuthService {
 
   async verifyRefreshToken(refreshToken: string): Promise<any> {
     try {
-      const decoded = this.jwtService.verify(
-        refreshToken,
-        this.configService.get('JWT_SECRET_REFRESH'),
-      );
+      const decoded = this.jwtService.verify(refreshToken, {
+        secret: this.configService.get('JWT_SECRET_REFRESH'),
+      });
 
       return decoded;
     } catch (error) {

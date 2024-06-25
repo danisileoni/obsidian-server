@@ -40,7 +40,7 @@ async function bootstrap(): Promise<void> {
   app.use(passport.initialize());
   app.use(passport.session());
   app.use(cookieParser());
-  app.use(csurf());
+  // app.use(csurf());
 
   await app.listen(3000);
 }
