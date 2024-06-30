@@ -19,13 +19,9 @@ export class PaypalWebhookController {
   async handleWebhook(
     @Headers() headers: Record<string, string>,
     @Body() body: ResponseWebHookPaypal,
-  ): Promise<{ success: true }> {
+  ): Promise<{ status: string }> {
     try {
-      await this.paypalWebhookService.handleWebhook(headers, body);
-
-      return {
-        success: true,
-      };
+      return await this.paypalWebhookService.handleWebhook(headers, body);
     } catch (error) {
       console.error('Error handling PayPal webhook:', error.message);
       throw new InternalServerErrorException('Check log server');

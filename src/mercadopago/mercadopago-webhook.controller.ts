@@ -1,5 +1,6 @@
 import { Body, Controller, Headers, Post, Query } from '@nestjs/common';
 import { MercadopagoWebhookService } from './mercadopago-webhook.service';
+import { BodyWebhookMP, HeadersMP, QueryParamsMP } from 'src/types';
 
 @Controller('mercadopago')
 export class MercadopagoWebhookController {
@@ -9,15 +10,14 @@ export class MercadopagoWebhookController {
 
   @Post('webhook-mp')
   async handleWebhook(
-    @Query() querys: any,
-    @Body() body: any,
-    @Headers() headers: any,
-  ) {
-    const hola = await this.mercadopagoWebhookService.handleWebhook(
+    @Query() querys: QueryParamsMP,
+    @Body() body: BodyWebhookMP,
+    @Headers() headers: HeadersMP,
+  ): Promise<{ status: string }> {
+    return await this.mercadopagoWebhookService.handleWebhook(
       headers,
       body,
       querys,
     );
-    console.log(hola);
   }
 }

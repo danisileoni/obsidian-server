@@ -115,7 +115,7 @@ export class PaymentsService {
   public async assignedNewPayment(
     idOrder: string,
     order: ResponseWebHookPaypal | PaymentResponse,
-  ): Promise<ResponseWebHookPaypal | PaymentResponse> {
+  ): Promise<boolean> {
     let typeOrder: TypeOrder;
     const queryRunner = this.dataSource.createQueryRunner();
 
@@ -193,7 +193,7 @@ export class PaymentsService {
 
       await queryRunner.commitTransaction();
 
-      return order;
+      return true;
     } catch (error) {
       console.log(error);
       await queryRunner.rollbackTransaction();

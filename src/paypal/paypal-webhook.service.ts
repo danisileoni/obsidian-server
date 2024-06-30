@@ -9,7 +9,6 @@ import axios from 'axios';
 import * as fetch from 'node-fetch';
 import { type ResponseWebHookPaypal } from 'src/types';
 import { PaymentsService } from '../payments/payments.service';
-import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 
 @Injectable()
 export class PaypalWebhookService {
@@ -29,7 +28,7 @@ export class PaypalWebhookService {
   async handleWebhook(
     headers: Record<string, string>,
     body: ResponseWebHookPaypal,
-  ): Promise<ResponseWebHookPaypal | PaymentResponse> {
+  ): Promise<{ status: string }> {
     const validate = await this.validateWebHook(headers, body);
 
     if (validate) {
@@ -37,10 +36,18 @@ export class PaypalWebhookService {
         body.event_type === 'CHECKOUT.ORDER.APPROVED' ||
         body.event_type === 'CHECKOUT.ORDER.COMPLETED'
       ) {
-        return await this.paymentService.assignedNewPayment(
+        const paymentComplete = await this.paymentService.assignedNewPayment(
           body.resource.purchase_units[0].reference_id,
           body,
         );
+
+        if (paymentComplete) {
+          if (paymentComplete) {
+            return {
+              status: 'Payment completed successfully',
+            };
+          }
+        }
       }
     } else {
       throw new BadRequestException('Something has gone wrong');
