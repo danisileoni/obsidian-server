@@ -11,7 +11,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
+import { AuthService } from '../auth/auth.service';
 import { CreateUserDto } from 'src/users/dto/create-user.dto';
 import { User } from 'src/users/entities/user.entity';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -31,16 +31,16 @@ export class AuthController {
   async register(
     @Body() createUserDto: CreateUserDto,
     @Res() res: Response,
-  ): Promise<Response<User>> {
-    return await this.authService.register(createUserDto, res);
+  ): Promise<void> {
+    await this.authService.register(createUserDto, res);
   }
 
   @Post('login')
   async login(
     @Body() loginUserDto: LoginUserDto,
     @Res() res: Response,
-  ): Promise<Response<User>> {
-    return await this.authService.login(loginUserDto, res);
+  ): Promise<void> {
+    await this.authService.login(loginUserDto, res);
   }
 
   @Get('google/login')
@@ -73,11 +73,12 @@ export class AuthController {
       res.redirect('http://localhost:5173');
     } catch (error) {
       console.log(error);
+      res.redirect('http://localhost:5173');
     }
   }
 
   @UseGuards(RefreshTokenGuard)
-  @Post('/refresh')
+  @Post('refresh')
   async refreshTokens(
     @GetUser() user: { id: string; refreshToken: string },
     @Res() res: Response,
@@ -92,11 +93,11 @@ export class AuthController {
     return await this.authService.verifyAccessToken(token);
   }
 
-  @Get('verify-refresh')
-  async verifyRefreshToken(@Req() req: Request): Promise<any> {
-    const headers = req.headers['authorization'];
-    const token: string = headers && headers.split(' ')[1];
-    return await this.authService.verifyRefreshToken(token);
+  @Post('logout')
+  @Auth(ValidRoles.user)
+  async logout(@GetUser() user: User): Promise<boolean> {
+    console.log(user);
+    return await this.authService.logout(user.id);
   }
 
   @Patch(':id')
@@ -108,7 +109,7 @@ export class AuthController {
   }
 
   @Get('active')
-  @Auth(ValidRoles.admin)
+  @Auth(ValidRoles.user)
   async getUserActive(@GetUser() user: User): Promise<User> {
     return user;
   }

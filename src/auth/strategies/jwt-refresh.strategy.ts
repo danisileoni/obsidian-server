@@ -60,6 +60,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
 
     return {
       ...user,
+      ...payload,
       refreshToken,
     };
   }

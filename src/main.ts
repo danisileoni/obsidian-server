@@ -6,17 +6,19 @@ import * as session from 'express-session';
 import * as passport from 'passport';
 import * as csurf from 'csurf';
 import { v4 as uuid } from 'uuid';
+import * as cors from 'cors';
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { cors: true });
+  const app = await NestFactory.create(AppModule);
 
   // TODO: rate limit
 
-  app.enableCors({
-    origin: ['http://localhost:5173'],
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-  });
+  app.use(
+    cors({
+      origin: 'http://localhost:5173',
+      credentials: true,
+    }),
+  );
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(
     new ValidationPipe({

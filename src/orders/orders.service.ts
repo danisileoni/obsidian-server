@@ -65,6 +65,8 @@ export class OrdersService {
       }
     });
 
+    // TODO: validation for type of account
+
     const user = await this.userRepository.findOneBy({ id: idUser.id });
     if (!user) {
       throw new NotFoundException(`User not found with id: ${idUser.id}`);

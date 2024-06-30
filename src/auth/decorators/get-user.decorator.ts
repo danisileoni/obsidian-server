@@ -1,7 +1,7 @@
 import {
   type ExecutionContext,
-  InternalServerErrorException,
   createParamDecorator,
+  BadRequestException,
 } from '@nestjs/common';
 
 export const GetUser = createParamDecorator(
@@ -10,7 +10,7 @@ export const GetUser = createParamDecorator(
     const user = req.user;
 
     if (!user) {
-      throw new InternalServerErrorException('User not found (request)');
+      throw new BadRequestException('User not found (request)');
     }
 
     return !data ? user : user[data];

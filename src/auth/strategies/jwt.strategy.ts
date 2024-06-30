@@ -20,7 +20,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: JwtPayload): Promise<void> {
+  async validate(payload: JwtPayload): Promise<JwtPayload> {
     const { id } = payload;
 
     const user = await this.userRepository.findOneBy({ id });
@@ -31,5 +31,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     if (!user.isActive) {
       throw new UnauthorizedException('User is BANNED');
     }
+
+    return payload;
   }
 }

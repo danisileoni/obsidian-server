@@ -11,12 +11,12 @@ import { User } from 'src/users/entities/user.entity';
 import { Repository } from 'typeorm';
 import * as argon2 from 'argon2';
 import { type CreateUserDto } from 'src/users/dto/create-user.dto';
-import { type LoginUserDto } from './dto/login-user.dto';
+import { type LoginUserDto } from '../auth/dto/login-user.dto';
 import { type UpdateUserDto } from 'src/users/dto/update-user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { type Response } from 'express';
-import { type JwtPayload } from './interfaces/jwt-payload.interface';
-import { type ValidateGoogleDto } from './dto/validate-google.dto';
+import { type JwtPayload } from '../auth/interfaces/jwt-payload.interface';
+import { type ValidateGoogleDto } from '../auth/dto/validate-google.dto';
 import { ConfigService } from '@nestjs/config';
 
 const options = {
@@ -37,10 +37,7 @@ export class AuthService {
     readonly configService: ConfigService,
   ) {}
 
-  async register(
-    createUserDto: CreateUserDto,
-    res: Response,
-  ): Promise<Response<User>> {
+  async register(createUserDto: CreateUserDto, res: Response) {
     const { password, confirmPassword, ...userData } = createUserDto;
 
     if (password !== confirmPassword) {
@@ -66,24 +63,20 @@ export class AuthService {
 
     const tokens = await this.jwtSing(user);
     await this.updateRtHash(user.id, tokens.refreshToken);
-    res
-      .cookie('token', tokens.accessToken, {
-        httpOnly: false,
-        sameSite: 'lax',
-        secure: true,
-      })
-      .cookie('rs-token', tokens.refreshToken, {
-        httpOnly: false,
-        sameSite: 'lax',
-        secure: true,
-      });
-    return res.status(200).send({ user });
+    res.cookie('token', tokens.accessToken, {
+      httpOnly: false,
+      sameSite: 'lax',
+      secure: true,
+    });
+    res.cookie('rs-token', tokens.refreshToken, {
+      httpOnly: false,
+      sameSite: 'lax',
+      secure: true,
+    });
+    res.status(200).send({ user });
   }
 
-  async login(
-    loginUserDto: LoginUserDto,
-    res: Response,
-  ): Promise<Response<User>> {
+  async login(loginUserDto: LoginUserDto, res: Response) {
     const { password, username } = loginUserDto;
 
     const user = await this.usersRepository.findOne({
@@ -100,18 +93,17 @@ export class AuthService {
 
     const tokens = await this.jwtSing(user);
     await this.updateRtHash(user.id, tokens.refreshToken);
-    res
-      .cookie('token', tokens.accessToken, {
-        httpOnly: false,
-        sameSite: 'lax',
-        secure: true,
-      })
-      .cookie('rs-token', tokens.refreshToken, {
-        httpOnly: false,
-        sameSite: 'lax',
-        secure: true,
-      });
-    return res.status(200).send({ user });
+    res.cookie('token', tokens.accessToken, {
+      httpOnly: false,
+      sameSite: 'lax',
+      secure: true,
+    });
+    res.cookie('rs-token', tokens.refreshToken, {
+      httpOnly: false,
+      sameSite: 'lax',
+      secure: true,
+    });
+    res.status(200).send({ user });
   }
 
   async validateUserGoogle(
@@ -148,32 +140,48 @@ export class AuthService {
   }
 
   async update(id: string, updateUserDto: UpdateUserDto): Promise<any> {
-    if (updateUserDto.password !== updateUserDto.confirmPassword) {
-      throw new BadRequestException('Passwords are not the same');
+    const user = await this.usersRepository.findOne({
+      where: { id },
+      select: { password: true },
+    });
+    console.log(updateUserDto);
+
+    if (updateUserDto.currentPassword) {
+      if (
+        !user ||
+        !(await argon2.verify(user.password, updateUserDto.currentPassword))
+      ) {
+        throw new BadRequestException('Current password is incorrect');
+      }
     }
 
     if (updateUserDto.password) {
+      if (updateUserDto.password !== updateUserDto.confirmPassword) {
+        throw new BadRequestException('Passwords are not the same');
+      }
       updateUserDto.password = await argon2.hash(
         updateUserDto.password,
         options,
       );
     }
 
-    const user = await this.usersRepository.preload({
+    const userUpdate = await this.usersRepository.preload({
       id,
       ...updateUserDto,
     });
 
-    if (!user) {
+    if (!userUpdate) {
       throw new NotFoundException(`Not found user with id ${id}`);
     }
 
     try {
-      await this.usersRepository.save(user);
-      delete user.password;
-      delete user.roles;
+      await this.usersRepository.save(userUpdate);
+      delete userUpdate.password;
+      delete userUpdate.roles;
+      delete userUpdate.hashRefreshToken;
+      delete userUpdate.isActive;
 
-      return user;
+      return userUpdate;
     } catch (error) {
       const detailsError = error.detail.match(/Key \(([^)]+)\)=\(([^)]+)\)/);
       throw new BadRequestException(
@@ -193,7 +201,6 @@ export class AuthService {
     }
 
     const rtMatches = await argon2.verify(user.hashRefreshToken, refreshToken);
-    console.log(rtMatches);
     if (!rtMatches) {
       throw new ForbiddenException('Access Denied');
     }
@@ -226,15 +233,19 @@ export class AuthService {
     }
   }
 
-  async verifyRefreshToken(refreshToken: string): Promise<any> {
+  async logout(userId: string): Promise<boolean> {
     try {
-      const decoded = this.jwtService.verify(refreshToken, {
-        secret: this.configService.get('JWT_SECRET_REFRESH'),
-      });
+      await this.usersRepository
+        .createQueryBuilder()
+        .update()
+        .set({ hashRefreshToken: null })
+        .where('id = :id', { id: userId })
+        .execute();
 
-      return decoded;
+      return true;
     } catch (error) {
-      throw new UnauthorizedException('This token is not valid');
+      console.log(error);
+      throw new InternalServerErrorException('Check log server');
     }
   }
 

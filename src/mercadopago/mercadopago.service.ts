@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Payment } from 'mercadopago';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 import { type Order } from 'src/orders/entities/order.entity';
@@ -16,22 +17,25 @@ export class MercadopagoService {
   constructor(
     @Inject('MERCADO_PAGO')
     private readonly payment: Payment,
+    private readonly configService: ConfigService,
   ) {}
 
   async createOrder(
     { token, email, method, type, numbers }: MercadoPagoArs,
     items: Order,
+    idOrder: string,
   ): Promise<PaymentResponse> {
+    console.log(method);
     try {
       const amount = items.details.reduce((sum, item) => {
         if (item.quantityPrimary > 0) {
-          return sum + item.product.pricePrimary;
+          return sum + +item.product.pricePrimary;
         }
         if (item.quantitySecondary > 0) {
-          return sum + item.product.priceSecondary;
+          return sum + +item.product.priceSecondary;
         }
         if (!(item.quantityPrimary > 0 && item.quantitySecondary > 0)) {
-          return sum + item.product.price;
+          return sum + +item.product.price;
         }
         throw new InternalServerErrorException();
       }, 0);
@@ -45,30 +49,30 @@ export class MercadopagoService {
                 title: item.product.infoProduct.title,
                 category_id: 'game_digital',
                 quantity: (() => {
-                  if (item.quantityPrimary > 0) {
+                  if (+item.quantityPrimary > 0) {
                     return item.quantityPrimary;
                   }
-                  if (item.quantitySecondary > 0) {
+                  if (+item.quantitySecondary > 0) {
                     return item.quantitySecondary;
                   }
                   if (
-                    !(item.quantityPrimary > 0 && item.quantitySecondary > 0)
+                    !(+item.quantityPrimary > 0 && +item.quantitySecondary > 0)
                   ) {
-                    return item.quantitySteam;
+                    return +item.quantitySteam;
                   }
                   throw new InternalServerErrorException();
                 })(),
                 unit_price: (() => {
-                  if (item.quantityPrimary > 0) {
-                    return item.product.pricePrimary;
+                  if (+item.quantityPrimary > 0) {
+                    return +item.product.pricePrimary;
                   }
-                  if (item.quantitySecondary > 0) {
-                    return item.product.priceSecondary;
+                  if (+item.quantitySecondary > 0) {
+                    return +item.product.priceSecondary;
                   }
                   if (
-                    !(item.quantityPrimary > 0 && item.quantitySecondary > 0)
+                    !(+item.quantityPrimary > 0 && +item.quantitySecondary > 0)
                   ) {
-                    return item.product.price;
+                    return +item.product.price;
                   }
                   throw new InternalServerErrorException();
                 })(),
@@ -87,6 +91,8 @@ export class MercadopagoService {
           description: 'Payment for product',
           payment_method_id: method,
           installments: 1,
+          metadata: { id_order: idOrder },
+          notification_url: `${this.configService.get('HOST_TEST')}/mercadopago/webhook-mp`,
         },
       });
 

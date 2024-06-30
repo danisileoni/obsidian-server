@@ -13,9 +13,9 @@ import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTyp
 import { PaypalService } from 'src/paypal/paypal.service';
 import {
   type TypeOrder,
-  type PaypalCaptureResponse,
   type PaypalResponse,
   type ItemEmailPaid,
+  type ResponseWebHookPaypal,
 } from 'src/types';
 import { isOrderPaypalCapture } from 'src/common/helpers/isOrderPaypal.helper';
 import { Order } from 'src/orders/entities/order.entity';
@@ -62,13 +62,16 @@ export class PaymentsService {
       throw new NotFoundException(`Order not found with id: ${idOrder}`);
     }
 
+    if (items.paid) {
+      throw new BadRequestException('The order has already been paid');
+    }
+
     if (paymentGateway === 'mercadopago') {
       order = await this.mercadopagoService
-        .createOrder(createPaymentDto, items)
+        .createOrder(createPaymentDto, items, idOrder)
         .catch((error) => {
           throw new BadRequestException(error);
         });
-      return await this.assignedNewPayment(idOrder, order);
     }
 
     if (paymentGateway === 'paypal') {
@@ -111,17 +114,17 @@ export class PaymentsService {
 
   public async assignedNewPayment(
     idOrder: string,
-    order: PaypalCaptureResponse | PaymentResponse,
-  ): Promise<PaypalCaptureResponse | PaymentResponse> {
+    order: ResponseWebHookPaypal | PaymentResponse,
+  ): Promise<ResponseWebHookPaypal | PaymentResponse> {
     let typeOrder: TypeOrder;
     const queryRunner = this.dataSource.createQueryRunner();
 
     if (isOrderPaypalCapture(order)) {
       typeOrder = {
         id: order.id,
-        items: order.purchase_units[0].items,
+        items: order.resource.purchase_units[0].items,
         payer: {
-          email: order.payer.email_address,
+          email: order.resource.payment_source.paypal.email_address,
         },
         paymentGateway: 'paypal',
       };

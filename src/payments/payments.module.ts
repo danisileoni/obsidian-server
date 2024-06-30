@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { PaymentsController } from './payments.controller';
 import { MercadopagoModule } from 'src/mercadopago/mercadopago.module';
@@ -31,10 +31,11 @@ import { AccountPaid } from 'src/accounts/entities/accounts-paid.entity';
     MercadopagoModule,
     AuthModule,
     PassportModule,
-    PaypalModule,
+    forwardRef(() => PaypalModule),
     ProductsModule,
     MailsModule,
     AccountsModule,
   ],
+  exports: [PaymentsService],
 })
 export class PaymentsModule {}

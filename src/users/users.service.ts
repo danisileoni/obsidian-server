@@ -21,6 +21,11 @@ export class UsersService {
       throw new NotFoundException(`User not found whit id: ${id}`);
     }
 
+    delete user.roles;
+    delete user.isActive;
+    delete user.createAt;
+    delete user.hashRefreshToken;
+
     return user;
   }
 

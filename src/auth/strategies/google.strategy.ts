@@ -6,7 +6,7 @@ import {
   type VerifyCallback,
   type Profile,
 } from 'passport-google-oauth20';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../../auth/auth.service';
 import { v4 as uuid } from 'uuid';
 
 @Injectable()
@@ -29,15 +29,19 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile: Profile,
     done: VerifyCallback,
   ): Promise<void> {
-    const indexAtSign = profile.emails[0].value.indexOf('@');
+    try {
+      const indexAtSign = profile.emails[0].value.indexOf('@');
 
-    const user = await this.authService.validateUserGoogle({
-      email: profile.emails[0].value,
-      name: `${profile.name.givenName} ${profile.name.familyName}`,
-      password: uuid(),
-      username: profile.emails[0].value.slice(0, indexAtSign),
-    });
+      const user = await this.authService.validateUserGoogle({
+        email: profile.emails[0].value,
+        name: `${profile.name.givenName} ${profile.name.familyName}`,
+        password: uuid(),
+        username: profile.emails[0].value.slice(0, indexAtSign),
+      });
 
-    done(null, user);
+      done(null, user);
+    } catch (error) {
+      done(null, false);
+    }
   }
 }

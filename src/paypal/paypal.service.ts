@@ -35,6 +35,7 @@ export class PaypalService {
       intent: 'CAPTURE',
       purchase_units: [
         {
+          reference_id: orderId,
           items: itemsConvertUSD.amountUnitsConvert.map((item) => {
             return {
               name: item.title,
@@ -61,7 +62,6 @@ export class PaypalService {
         brand_name: 'obsidiandigitales.com',
         landing_page: 'NO_PREFERENCE',
         user_action: 'PAY_NOW',
-        return_url: `${this.HOST}/payments/capture-order-pp/${orderId}`,
         cancel_url: `${this.HOST}/paypal/cancel-order`,
       },
     };
