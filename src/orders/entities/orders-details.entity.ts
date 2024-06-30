@@ -22,6 +22,9 @@ export class OrdersDetails {
   @Column('numeric')
   quantitySteam: number;
 
+  @Column('numeric')
+  quantityPlayStation3: number;
+
   @ManyToOne(() => Product, (product) => product.ordersDetails, {
     eager: true,
     nullable: false,
