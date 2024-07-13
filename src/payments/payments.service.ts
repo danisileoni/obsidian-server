@@ -188,7 +188,7 @@ export class PaymentsService {
         throw new NotFoundException(`Order not found with id: ${idOrder}`);
       }
       if (orderToPaid.paid) {
-        throw new InternalServerErrorException('You ve already been paid');
+        throw new BadRequestException('You ve already been paid');
       }
 
       const payment = this.paymentRepository.create({
@@ -217,7 +217,7 @@ export class PaymentsService {
       });
 
       await this.mailsService.sendConfirmPaid(
-        'daniele1107yt@gmail.com',
+        orderToPaid.user.email,
         deCryptAccount,
       );
 

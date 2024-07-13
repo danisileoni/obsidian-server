@@ -33,6 +33,7 @@ export class Order {
   paid: boolean;
 
   @ManyToOne(() => User, (user) => user.orders, {
+    eager: true,
     nullable: false,
   })
   @JoinColumn()
