@@ -58,12 +58,20 @@ export class Sale {
     if (this.product) {
       const discountPercentage = this.sale / 100;
       if (this.product.priceSecondary && this.product.pricePrimary) {
-        this.salePrimary = this.product.pricePrimary * (1 - discountPercentage);
-        this.saleSecondary =
-          this.product.priceSecondary * (1 - discountPercentage);
+        this.salePrimary = +(
+          this.product.pricePrimary *
+          (1 - discountPercentage)
+        ).toFixed(0);
+        this.saleSecondary = +(
+          this.product.priceSecondary *
+          (1 - discountPercentage)
+        ).toFixed(0);
       }
       if (this.product.price) {
-        this.salePrice = this.product.price * (1 - discountPercentage);
+        this.salePrice = +(
+          this.product.price *
+          (1 - discountPercentage)
+        ).toFixed(0);
       }
     }
   }
