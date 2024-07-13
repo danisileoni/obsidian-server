@@ -217,7 +217,7 @@ export class PaymentsService {
       });
 
       await this.mailsService.sendConfirmPaid(
-        'obsidiandigitales@outlook.com.ar',
+        'daniele1107yt@gmail.com',
         deCryptAccount,
       );
 

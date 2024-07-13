@@ -20,9 +20,6 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
             pass: config.get('API_KEY_EMAIL'),
           },
         },
-        defaults: {
-          from: `"No Reply" <${config.get('MAIL_FROM')}>`,
-        },
         template: {
           // eslint-disable-next-line n/no-path-concat
           dir: __dirname + '/templates',
