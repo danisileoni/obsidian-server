@@ -62,7 +62,7 @@ export class PaypalService {
         brand_name: 'obsidiandigitales.com',
         landing_page: 'NO_PREFERENCE',
         user_action: 'PAY_NOW',
-        return_url: `http://localhost:5173/shopping-cart/payment/process-payment/${orderId}`,
+        return_url: `${this.HOST}/shopping-cart/payment/process-payment/${orderId}`,
         cancel_url: `${this.HOST}/paypal/cancel-order`,
       },
     };
