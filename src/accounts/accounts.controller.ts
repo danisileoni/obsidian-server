@@ -33,7 +33,6 @@ export class AccountsController {
   }
 
   @Get('find-accounts')
-  @Auth(ValidRoles.admin)
   async findSelect(
     @Query('productsId') productsId: string,
   ): Promise<Array<{ id: number; quantity: number }>> {
