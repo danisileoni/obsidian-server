@@ -22,7 +22,7 @@ export class PaypalService {
   private readonly API_URL: string;
 
   constructor() {
-    this.HOST = process.env.HOST;
+    this.HOST = process.env.HOST_FRONT;
     this.API_CLIENT = process.env.API_CLIENT_PAYPAL;
     this.API_SECRET = process.env.API_SECRET_PAYPAL;
     this.API_URL = process.env.API_URL_PAYPAL;
