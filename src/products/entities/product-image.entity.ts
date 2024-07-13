@@ -3,7 +3,7 @@ import { InfoProduct } from './info-product.entity';
 
 @Entity()
 export class ProductImage {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column('text', {
@@ -13,6 +13,7 @@ export class ProductImage {
 
   @ManyToOne(() => InfoProduct, (infoProduct) => infoProduct.images, {
     nullable: false,
+    onDelete: 'CASCADE',
   })
   infoProduct: InfoProduct;
 }

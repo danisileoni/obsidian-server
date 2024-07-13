@@ -16,11 +16,16 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: string;
 
-  @Column('text', {
+  @Column('date', {
     nullable: false,
     default: new Date(),
   })
   createAt: Date;
+
+  @Column('numeric', {
+    nullable: true,
+  })
+  total: number;
 
   @Column('boolean', {
     default: false,
@@ -33,13 +38,17 @@ export class Order {
   @JoinColumn()
   user: User;
 
-  @OneToOne(() => Payment, (payment) => payment.order)
+  @OneToOne(() => Payment, (payment) => payment.order, {
+    cascade: ['insert', 'update'],
+    onDelete: 'CASCADE',
+  })
   @JoinColumn()
   payment: Payment;
 
   @OneToMany(() => OrdersDetails, (details) => details.order, {
     eager: true,
-    cascade: true,
+    cascade: ['insert', 'update'],
+    onDelete: 'CASCADE',
   })
   details: OrdersDetails[];
 }

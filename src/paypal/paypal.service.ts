@@ -62,6 +62,7 @@ export class PaypalService {
         brand_name: 'obsidiandigitales.com',
         landing_page: 'NO_PREFERENCE',
         user_action: 'PAY_NOW',
+        return_url: `http://localhost:5173/shopping-cart/payment/process-payment/${orderId}`,
         cancel_url: `${this.HOST}/paypal/cancel-order`,
       },
     };
@@ -148,22 +149,40 @@ export class PaypalService {
             if (item.quantitySecondary > 0) {
               return item.quantitySecondary;
             }
-            if (!(item.quantityPrimary > 0 && item.quantitySecondary > 0)) {
+            if (item.quantitySteam > 0) {
               return item.quantitySteam;
+            }
+            if (item.quantityPlayStation3 > 0) {
+              return item.quantityPlayStation3;
             }
           })(),
           amount: (() => {
             if (item.quantityPrimary > 0) {
+              if (item.product.sale) {
+                return parseFloat(
+                  (item.product.sale.salePrimary / data.venta).toFixed(2),
+                );
+              }
               return parseFloat(
                 (item.product.pricePrimary / data.venta).toFixed(2),
               );
             }
             if (item.quantitySecondary > 0) {
+              if (item.product.sale) {
+                return parseFloat(
+                  (item.product.sale.saleSecondary / data.venta).toFixed(2),
+                );
+              }
               return parseFloat(
                 (item.product.priceSecondary / data.venta).toFixed(2),
               );
             }
             if (!(item.quantityPrimary > 0 && item.quantitySecondary > 0)) {
+              if (item.product.sale) {
+                return parseFloat(
+                  (item.product.sale.salePrice / data.venta).toFixed(2),
+                );
+              }
               return parseFloat((item.product.price / data.venta).toFixed(2));
             }
             throw new InternalServerErrorException();

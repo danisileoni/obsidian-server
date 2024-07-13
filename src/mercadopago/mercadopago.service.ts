@@ -64,14 +64,23 @@ export class MercadopagoService {
                 })(),
                 unit_price: (() => {
                   if (+item.quantityPrimary > 0) {
+                    if (item.product.sale) {
+                      return +item.product.sale.salePrimary;
+                    }
                     return +item.product.pricePrimary;
                   }
                   if (+item.quantitySecondary > 0) {
+                    if (item.product.sale) {
+                      return +item.product.sale.saleSecondary;
+                    }
                     return +item.product.priceSecondary;
                   }
                   if (
                     !(+item.quantityPrimary > 0 && +item.quantitySecondary > 0)
                   ) {
+                    if (item.product.sale) {
+                      return +item.product.sale.salePrice;
+                    }
                     return +item.product.price;
                   }
                   throw new InternalServerErrorException();

@@ -14,6 +14,7 @@ import {
 } from 'src/types';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 import { PaymentsService } from '../payments/payments.service';
+import { WsMessageGateway } from '../ws-message/ws-message.gateway';
 
 interface StatusPayment {
   status: string;
@@ -27,6 +28,7 @@ export class MercadopagoWebhookService {
     private readonly payment: Payment,
     private readonly paymentsService: PaymentsService,
     private readonly configService: ConfigService,
+    private readonly wsMessageGateway: WsMessageGateway,
   ) {}
 
   private readonly SECRET_WEBHOOK: string =
@@ -47,6 +49,7 @@ export class MercadopagoWebhookService {
       throw new BadRequestException('This is not payment');
     }
     const payment = await this.payment.get({ id: body.data.id });
+    const orderId = payment.metadata.id_order as string;
 
     const validPayment = this.paymentValidation(payment);
 
@@ -55,6 +58,7 @@ export class MercadopagoWebhookService {
         validPayment.status === 'pending' ||
         validPayment.status === 'in_process'
       ) {
+        this.wsMessageGateway.sendNotification(orderId, 'Payment pending');
         return {
           status: validPayment.status,
         };
@@ -64,8 +68,12 @@ export class MercadopagoWebhookService {
         validPayment.status === 'authorized'
       ) {
         const paymentComplete = await this.paymentsService.assignedNewPayment(
-          payment.metadata.id_order as string,
+          orderId,
           payment,
+        );
+        this.wsMessageGateway.sendNotification(
+          orderId,
+          'Payment completed successfully',
         );
         if (paymentComplete) {
           return {
@@ -73,7 +81,9 @@ export class MercadopagoWebhookService {
           };
         }
       }
+      this.wsMessageGateway.sendNotification(orderId, 'Payment cancel');
     } else {
+      this.wsMessageGateway.sendNotification(orderId, 'Payment cancel');
       throw new ForbiddenException('Unauthorized or canceled payment');
     }
   }

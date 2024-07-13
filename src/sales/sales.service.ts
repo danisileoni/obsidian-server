@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -26,8 +27,11 @@ export class SalesService {
   async create(createSaleDto: CreateSaleDto, id: string): Promise<Sale> {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
+    if (createSaleDto.sale <= 0) {
+      throw new BadRequestException('>0');
+    }
 
-    const product = await this.productRepository.findOneBy({ id });
+    const product = await this.productRepository.findOneBy({ id: +id });
 
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -54,6 +58,11 @@ export class SalesService {
 
   async setterTimer(createTimerDto: CreateTimerDto): Promise<Timer> {
     try {
+      const timers = await this.timerRepository.find();
+      if (timers.length > 0) {
+        throw new BadRequestException('A timer already exists');
+      }
+
       const timer = this.timerRepository.create(createTimerDto);
       await this.timerRepository.save(timer);
       return timer;
@@ -112,14 +121,14 @@ export class SalesService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
-    const sale = await this.saleRepository.findOneBy({ id });
+    const sale = await this.productRepository.findOneBy({ id: +id });
 
     if (!sale) {
       throw new NotFoundException(`Sale not found with id: ${id}`);
     }
 
     try {
-      await this.saleRepository.remove(sale);
+      await this.saleRepository.remove(sale.sale);
 
       await queryRunner.query('REFRESH MATERIALIZED view product_materialized');
 

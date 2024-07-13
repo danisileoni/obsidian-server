@@ -40,13 +40,16 @@ export class InfoProduct {
   createAt: string;
 
   @OneToMany(() => ProductImage, (productImage) => productImage.infoProduct, {
-    cascade: true,
-    onDelete: 'CASCADE',
+    cascade: ['insert', 'update'],
     eager: true,
   })
   images: ProductImage[];
 
-  @OneToMany(() => Product, (product) => product.infoProduct)
+  @OneToMany(() => Product, (product) => product.infoProduct, {
+    cascade: ['insert', 'update'],
+    onDelete: 'CASCADE',
+    eager: true,
+  })
   product: Product[];
 
   @BeforeInsert()

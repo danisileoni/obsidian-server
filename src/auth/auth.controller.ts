@@ -22,6 +22,7 @@ import { Auth } from './decorators/auth.decorator';
 import { ValidRoles } from './interfaces/valid-roles.enum';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
+import { LoginDashboardDto } from './dto/login-dashboard.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -41,6 +42,14 @@ export class AuthController {
     @Res() res: Response,
   ): Promise<void> {
     await this.authService.login(loginUserDto, res);
+  }
+
+  @Post('login-dashboard')
+  async loginDashboard(
+    @Body() loginUserDto: LoginDashboardDto,
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.authService.loginDashboard(loginUserDto, res);
   }
 
   @Get('google/login')
@@ -86,8 +95,28 @@ export class AuthController {
     await this.authService.refreshTokens(user.id, user.refreshToken, res);
   }
 
+  @UseGuards(RefreshTokenGuard)
+  @Post('refresh-dashboard')
+  async refreshTokensDashboard(
+    @GetUser() user: { id: string; refreshToken: string },
+    @Res() res: Response,
+  ): Promise<void> {
+    await this.authService.refreshTokensDashboard(
+      user.id,
+      user.refreshToken,
+      res,
+    );
+  }
+
   @Get('verify-access')
   async verifyAccessToken(@Req() req: Request): Promise<any> {
+    const headers = req.headers['authorization'];
+    const token: string = headers && headers.split(' ')[1];
+    return await this.authService.verifyAccessToken(token);
+  }
+
+  @Get('verify-access-dashboard')
+  async verifyAccessTokenDashboard(@Req() req: Request): Promise<any> {
     const headers = req.headers['authorization'];
     const token: string = headers && headers.split(' ')[1];
     return await this.authService.verifyAccessToken(token);
@@ -96,11 +125,11 @@ export class AuthController {
   @Post('logout')
   @Auth(ValidRoles.user)
   async logout(@GetUser() user: User): Promise<boolean> {
-    console.log(user);
     return await this.authService.logout(user.id);
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.user)
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateUserDto: UpdateUserDto,

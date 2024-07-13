@@ -27,6 +27,10 @@ export class InfoProductsService {
     createInfoProductDto: CreateInfoProductDto,
     fileImages: Express.Multer.File[],
   ): Promise<InfoProduct> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     if (!fileImages) {
       throw new NotFoundException(
         'Images Not found, make sure you are loading the images',
@@ -52,12 +56,18 @@ export class InfoProductsService {
         }),
       });
 
-      await this.infoProductRepository.save(infoProduct);
+      await queryRunner.manager.save(infoProduct);
+      await queryRunner.query('REFRESH MATERIALIZED view product_materialized');
+
+      await queryRunner.commitTransaction();
 
       return infoProduct;
     } catch (error) {
       console.log(error);
+      await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException('Check logs server');
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -153,6 +163,8 @@ export class InfoProductsService {
       Object.assign(infoProduct, updateInfoProductDto);
 
       await queryRunner.manager.save(infoProduct);
+      await queryRunner.query('REFRESH MATERIALIZED view product_materialized');
+
       await queryRunner.commitTransaction();
 
       return await this.infoProductRepository.findOneBy({ id });
@@ -166,20 +178,30 @@ export class InfoProductsService {
   }
 
   async remove(id: string): Promise<{ message: string }> {
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
     const product = await this.infoProductRepository.findOneBy({ id });
     if (!product) {
       throw new NotFoundException(`Product not found with id: ${id}`);
     }
 
     try {
-      await this.infoProductRepository.remove(product);
+      await this.infoProductRepository.delete(product.id);
+      await queryRunner.query('REFRESH MATERIALIZED view product_materialized');
+
+      await queryRunner.commitTransaction();
 
       return {
         message: 'The product is remove success',
       };
     } catch (error) {
       console.log(error);
+      await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException('Check the server logs');
+    } finally {
+      await queryRunner.release();
     }
   }
 }

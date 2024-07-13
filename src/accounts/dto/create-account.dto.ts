@@ -16,7 +16,7 @@ export class CreateAccountDto {
   email: string;
 
   @IsString()
-  @IsIn(['PlayStation 4', 'PlayStation 5', 'Steam'])
+  @IsIn(['PlayStation 4', 'PlayStation 5', 'Steam', 'PlayStation 3'])
   typeAccount: string;
 
   @IsString()

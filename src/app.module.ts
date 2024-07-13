@@ -20,6 +20,8 @@ import { OrdersModule } from './orders/orders.module';
 import { MailsModule } from './mails/mails.module';
 import { PlatformModule } from './platform/platform.module';
 import { PassportModule } from '@nestjs/passport';
+import { WsMessageGateway } from './ws-message/ws-message.gateway';
+import { WsMessageModule } from './ws-message/ws-message.module';
 
 @Module({
   imports: [
@@ -50,9 +52,10 @@ import { PassportModule } from '@nestjs/passport';
     OrdersModule,
     MailsModule,
     PlatformModule,
+    WsMessageModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, WsMessageGateway],
   exports: [ConfigModule],
 })
 export class AppModule {}

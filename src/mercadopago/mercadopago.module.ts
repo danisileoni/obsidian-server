@@ -4,6 +4,7 @@ import { MercadopagoProvider } from './mercadopago.provider';
 import { MercadopagoWebhookController } from './mercadopago-webhook.controller';
 import { MercadopagoWebhookService } from './mercadopago-webhook.service';
 import { PaymentsModule } from 'src/payments/payments.module';
+import { WsMessageModule } from 'src/ws-message/ws-message.module';
 
 @Module({
   providers: [
@@ -12,7 +13,7 @@ import { PaymentsModule } from 'src/payments/payments.module';
     MercadopagoWebhookService,
   ],
   exports: [MercadopagoService, MercadopagoProvider],
-  imports: [forwardRef(() => PaymentsModule)],
+  imports: [forwardRef(() => PaymentsModule), WsMessageModule],
   controllers: [MercadopagoWebhookController],
 })
 export class MercadopagoModule {}

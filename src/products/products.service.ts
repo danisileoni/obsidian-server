@@ -101,7 +101,7 @@ export class ProductsService {
       sale,
       limit,
       offset,
-      search,
+      search = '',
     } = filterProductDto;
 
     const queryRunner = this.dataSource.createQueryRunner();
@@ -174,7 +174,7 @@ export class ProductsService {
           ${productWhereClause}
         )
         ${materializedWhereClause}
-        ORDER BY "createAt"
+        ORDER BY "createAt" DESC
         LIMIT $${parameters.length + 1}
         OFFSET $${parameters.length + 2}`;
 
@@ -291,7 +291,7 @@ export class ProductsService {
 
     try {
       const product = await this.productRepository.preload({
-        id,
+        id: +id,
         ...updateProductDto,
       });
 
@@ -305,10 +305,10 @@ export class ProductsService {
 
       return product;
     } catch (error) {
+      console.log(error);
       if (error.status === 404) {
         throw new NotFoundException(`Product not found with id: ${id}`);
       }
-      console.log(error);
       throw new InternalServerErrorException('Check server error');
     } finally {
       await queryRunner.release();
@@ -319,14 +319,14 @@ export class ProductsService {
     const queryRunner = this.dataSource.createQueryRunner();
     await queryRunner.connect();
 
-    const product = await this.productRepository.findOneBy({ id });
+    const product = await this.productRepository.findOneBy({ id: +id });
 
     if (!product) {
       throw new NotFoundException(`Product not found with id: ${id}`);
     }
 
     try {
-      await this.productRepository.save(product);
+      await this.productRepository.remove(product);
       await queryRunner.query('REFRESH MATERIALIZED view product_materialized');
 
       return {

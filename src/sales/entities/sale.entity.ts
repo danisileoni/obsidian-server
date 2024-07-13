@@ -39,7 +39,7 @@ export class Sale {
   })
   finallySaleAt: Date;
 
-  @Column('text', {
+  @Column('date', {
     nullable: false,
     default: new Date(),
   })

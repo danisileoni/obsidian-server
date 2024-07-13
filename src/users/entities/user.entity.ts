@@ -36,7 +36,7 @@ export class User {
   })
   password: string;
 
-  @Column('text', {
+  @Column('date', {
     nullable: false,
     default: new Date().toISOString(),
   })

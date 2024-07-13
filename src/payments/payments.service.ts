@@ -7,7 +7,7 @@ import {
 import { type CreatePaymentDto } from './dto/create-payment.dto';
 import { MercadopagoService } from '../mercadopago/mercadopago.service';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, ILike, Repository } from 'typeorm';
 import { Payment } from './entities/payment.entity';
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes';
 import { PaypalService } from 'src/paypal/paypal.service';
@@ -22,6 +22,7 @@ import { Order } from 'src/orders/entities/order.entity';
 import { MailsService } from '../mails/mails.service';
 import { AccountsService } from '../accounts/accounts.service';
 import { AccountPaid } from 'src/accounts/entities/accounts-paid.entity';
+import { type FilterPaymentDto } from './dto/filters-payment.dto';
 
 @Injectable()
 export class PaymentsService {
@@ -75,6 +76,7 @@ export class PaymentsService {
     }
 
     if (paymentGateway === 'paypal') {
+      console.log(items);
       order = await this.paypal(items, idOrder);
     }
 
@@ -91,14 +93,53 @@ export class PaymentsService {
     return payment;
   }
 
-  async find(): Promise<Payment[]> {
-    const payments = await this.paymentRepository.find();
+  async find(filterPaymentDto: FilterPaymentDto): Promise<{
+    totalPages: number;
+    currentPage: number;
+    hasNextPage: boolean;
+    payments: Payment[];
+  }> {
+    const { search, limit, offset } = filterPaymentDto;
+
+    const whereCondition = search
+      ? { idPayment: ILike(`${search.trim()}%`) }
+      : {};
+
+    const payments = await this.paymentRepository.find({
+      where: whereCondition,
+      relations: {
+        order: {
+          details: true,
+          user: true,
+        },
+      },
+      order: {
+        paymentAt: {
+          direction: 'DESC',
+        },
+      },
+      skip: offset,
+      take: limit,
+    });
+
+    const countsPayment = await this.paymentRepository
+      .createQueryBuilder()
+      .getCount();
+
+    const totalPages: number = Math.ceil(+countsPayment / limit);
+    const currentPage: number = Math.floor(offset / limit + 1);
+    const hasNextPage: boolean = currentPage < totalPages;
 
     if (payments.length <= 0) {
       throw new NotFoundException('Payments not found');
     }
 
-    return payments;
+    return {
+      totalPages,
+      currentPage,
+      hasNextPage,
+      payments,
+    };
   }
 
   private async paypal(data: Order, userId: string): Promise<PaypalResponse> {
@@ -145,6 +186,9 @@ export class PaymentsService {
       const orderToPaid = await this.orderRepository.findOneBy({ id: idOrder });
       if (!orderToPaid) {
         throw new NotFoundException(`Order not found with id: ${idOrder}`);
+      }
+      if (orderToPaid.paid) {
+        throw new InternalServerErrorException('You ve already been paid');
       }
 
       const payment = this.paymentRepository.create({
@@ -195,7 +239,7 @@ export class PaymentsService {
 
       return true;
     } catch (error) {
-      console.log(error);
+      console.log({ error });
       await queryRunner.rollbackTransaction();
       throw new InternalServerErrorException('Check logs server');
     } finally {

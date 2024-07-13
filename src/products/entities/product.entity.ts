@@ -15,7 +15,7 @@ import { InfoProduct } from './info-product.entity';
 @Entity()
 export class Product {
   @PrimaryGeneratedColumn()
-  id: string;
+  id: number;
 
   @Column('numeric', {
     nullable: true,
@@ -38,7 +38,7 @@ export class Product {
   createAt: Date;
 
   @OneToMany(() => Account, (account) => account.product, {
-    cascade: true,
+    cascade: ['insert', 'update'],
     onDelete: 'CASCADE',
   })
   account: Account[];
@@ -46,16 +46,21 @@ export class Product {
   @OneToOne(() => Sale, (sale) => sale.product, {
     onDelete: 'CASCADE',
     eager: true,
-    cascade: true,
+    cascade: ['insert', 'update'],
   })
   sale: Sale;
 
-  @ManyToOne(() => InfoProduct, (infoProduct) => infoProduct.product)
+  @ManyToOne(() => InfoProduct, (infoProduct) => infoProduct.product, {
+    onDelete: 'CASCADE',
+  })
   infoProduct: InfoProduct;
 
   @ManyToOne(() => Platform, (platform) => platform.product)
   platform: Platform;
 
-  @OneToMany(() => OrdersDetails, (product) => product.product)
+  @OneToMany(() => OrdersDetails, (product) => product.product, {
+    cascade: ['insert', 'update'],
+    onDelete: 'CASCADE',
+  })
   ordersDetails: OrdersDetails;
 }

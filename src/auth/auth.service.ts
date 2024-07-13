@@ -18,6 +18,7 @@ import { type Response } from 'express';
 import { type JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { type ValidateGoogleDto } from '../auth/dto/validate-google.dto';
 import { ConfigService } from '@nestjs/config';
+import { type LoginDashboardDto } from './dto/login-dashboard.dto';
 
 const options = {
   timeCost: 2,
@@ -37,7 +38,7 @@ export class AuthService {
     readonly configService: ConfigService,
   ) {}
 
-  async register(createUserDto: CreateUserDto, res: Response) {
+  async register(createUserDto: CreateUserDto, res: Response): Promise<void> {
     const { password, confirmPassword, ...userData } = createUserDto;
 
     if (password !== confirmPassword) {
@@ -76,13 +77,50 @@ export class AuthService {
     res.status(200).send({ user });
   }
 
-  async login(loginUserDto: LoginUserDto, res: Response) {
+  async login(loginUserDto: LoginUserDto, res: Response): Promise<void> {
     const { password, username } = loginUserDto;
 
     const user = await this.usersRepository.findOne({
       where: { username },
       select: { username: true, password: true, id: true },
     });
+
+    if (!user || !(await argon2.verify(user.password, password))) {
+      throw new UnauthorizedException('Credentials are not valid');
+    }
+
+    delete user.password;
+    delete user.roles;
+
+    const tokens = await this.jwtSing(user);
+    await this.updateRtHash(user.id, tokens.refreshToken);
+    res.cookie('token', tokens.accessToken, {
+      httpOnly: false,
+      sameSite: 'lax',
+      secure: true,
+    });
+    res.cookie('rs-token', tokens.refreshToken, {
+      httpOnly: false,
+      sameSite: 'lax',
+      secure: true,
+    });
+    res.status(200).send({ user });
+  }
+
+  async loginDashboard(
+    loginDashboardDto: LoginDashboardDto,
+    res: Response,
+  ): Promise<void> {
+    const { password, email } = loginDashboardDto;
+
+    const user = await this.usersRepository.findOne({
+      where: { email },
+      select: { email: true, password: true, id: true, roles: true },
+    });
+
+    if (!user.roles.includes('admin')) {
+      throw new UnauthorizedException('Credentials are not valid');
+    }
 
     if (!user || !(await argon2.verify(user.password, password))) {
       throw new UnauthorizedException('Credentials are not valid');
@@ -144,7 +182,6 @@ export class AuthService {
       where: { id },
       select: { password: true },
     });
-    console.log(updateUserDto);
 
     if (updateUserDto.currentPassword) {
       if (
@@ -221,11 +258,63 @@ export class AuthService {
     return res.status(200).send({ user });
   }
 
+  async refreshTokensDashboard(
+    userId: string,
+    refreshToken: string,
+    res: Response,
+  ): Promise<Response<User>> {
+    const user = await this.usersRepository.findOneBy({ id: userId });
+    if (!user || !user.hashRefreshToken) {
+      throw new ForbiddenException('Access Denied');
+    }
+    if (!user.roles.includes('admin')) {
+      throw new UnauthorizedException('Access Denied');
+    }
+
+    const rtMatches = await argon2.verify(user.hashRefreshToken, refreshToken);
+    if (!rtMatches) {
+      throw new ForbiddenException('Access Denied');
+    }
+
+    const tokens = await this.jwtSing(user);
+    await this.updateRtHash(user.id, tokens.refreshToken);
+    res
+      .cookie('token', tokens.accessToken, {
+        httpOnly: false,
+        sameSite: 'lax',
+        secure: true,
+      })
+      .cookie('rs-token', tokens.refreshToken, {
+        httpOnly: false,
+        sameSite: 'lax',
+        secure: true,
+      });
+    return res.status(200).send({ user });
+  }
+
   async verifyAccessToken(accessToken: string): Promise<any> {
     try {
       const decoded = await this.jwtService.verifyAsync(accessToken, {
         secret: this.configService.get('JWT_SECRET'),
       });
+
+      return decoded;
+    } catch (error) {
+      throw new UnauthorizedException('This token is not valid');
+    }
+  }
+
+  async verifyAccessTokenDashboard(accessToken: string): Promise<any> {
+    try {
+      const decoded = await this.jwtService.verifyAsync(accessToken, {
+        secret: this.configService.get('JWT_SECRET'),
+      });
+
+      const user = await this.usersRepository.findOneBy({ id: decoded.id });
+
+      if (!user.roles.includes('admin')) {
+        throw new UnauthorizedException('Access denied');
+      }
 
       return decoded;
     } catch (error) {

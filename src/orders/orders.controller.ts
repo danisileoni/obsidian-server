@@ -6,6 +6,7 @@ import {
   Delete,
   Get,
   Put,
+  ParseUUIDPipe,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -28,7 +29,7 @@ export class OrdersController {
     return await this.ordersService.create(createOrderDto, idUser);
   }
 
-  @Get(':id')
+  @Get('search/:id')
   async findOne(@Param('id') id: string): Promise<Order> {
     return await this.ordersService.findOne(id);
   }
@@ -38,12 +39,40 @@ export class OrdersController {
     return await this.ordersService.find();
   }
 
+  @Get('total')
+  async totalProceeds(): Promise<{ total: number }> {
+    return await this.ordersService.totalProceeds();
+  }
+
+  @Get('user/:id')
+  async findOrderUser(
+    @Param('id', ParseUUIDPipe) id: string,
+  ): Promise<Order[]> {
+    return await this.ordersService.findOrderUser(id);
+  }
+
+  @Get('total-by-month')
+  async getTotalByMonth(): Promise<
+    Array<{ month: number; total: number | null }>
+  > {
+    return await this.ordersService.getTotalByMonth();
+  }
+
+  @Get('count-order-paid')
+  async countOrdersPaid(): Promise<
+    Array<{ month: number; total: number | null }>
+  > {
+    return await this.ordersService.countOrdersPaid();
+  }
+
   @Put(':id')
+  @Auth(ValidRoles.admin)
   async disablePaid(@Param('id') id: string): Promise<{ message: string }> {
     return await this.ordersService.disablePaid(id);
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
   async remove(@Param('id') id: string): Promise<{ message: string }> {
     return await this.ordersService.remove(id);
   }

@@ -8,5 +8,10 @@ export class Timer {
   @Column('text', {
     nullable: false,
   })
+  title: string;
+
+  @Column('date', {
+    nullable: false,
+  })
   endDate: Date;
 }

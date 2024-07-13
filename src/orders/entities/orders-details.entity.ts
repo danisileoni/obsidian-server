@@ -28,6 +28,7 @@ export class OrdersDetails {
   @ManyToOne(() => Product, (product) => product.ordersDetails, {
     eager: true,
     nullable: false,
+    onDelete: 'CASCADE',
   })
   @JoinColumn()
   product: Product;

@@ -24,6 +24,9 @@ import { UpdateInfoProductDto } from './dto/update-info-product.dto';
 import { FilterProductDto } from './dto/filters-product.dto';
 import { SelectProductDto } from './dto/select-product.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
+import { Auth } from 'src/auth/decorators/auth.decorator';
+import { ValidRoles } from 'src/auth/interfaces/valid-roles.enum';
 
 @Controller('products')
 export class ProductsController {
@@ -38,6 +41,7 @@ export class ProductsController {
       fileFilter,
     }),
   )
+  @Auth(ValidRoles.admin)
   async createInfoProduct(
     @UploadedFiles(ParseSharpPipe) images: Express.Multer.File[],
     @Body() createInfoProduct: CreateInfoProductDto,
@@ -69,6 +73,7 @@ export class ProductsController {
       fileFilter,
     }),
   )
+  @Auth(ValidRoles.admin)
   async updateInfoProduct(
     @UploadedFiles(ParseSharpPipe) images: Express.Multer.File[],
     @Param('id') id: string,
@@ -82,6 +87,7 @@ export class ProductsController {
   }
 
   @Delete('info-product/:id')
+  @Auth(ValidRoles.admin)
   async removeInfoProduct(
     @Param('id', ParseUUIDPipe) id: string,
   ): Promise<{ message: string }> {
@@ -89,6 +95,7 @@ export class ProductsController {
   }
 
   @Post('create/:idPlatform/:idInfo')
+  @Auth(ValidRoles.admin)
   async createProduct(
     @Param('idPlatform') idPlatform: string,
     @Param('idInfo') idInfo: string,
@@ -123,14 +130,16 @@ export class ProductsController {
   }
 
   @Patch(':id')
+  @Auth(ValidRoles.admin)
   async updateProduct(
     @Param('id') id: string,
-    @Body() updateInfoProductDto: UpdateInfoProductDto,
+    @Body() updateProductDto: UpdateProductDto,
   ): Promise<Product> {
-    return await this.productsService.update(updateInfoProductDto, id);
+    return await this.productsService.update(updateProductDto, id);
   }
 
   @Delete(':id')
+  @Auth(ValidRoles.admin)
   async removeProduct(@Param('id') id: string): Promise<{ message: string }> {
     return await this.productsService.remove(id);
   }

@@ -8,7 +8,7 @@ import { type CreateAccountDto } from './dto/create-account.dto';
 import { type UpdateAccountDto } from './dto/update-account.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Account } from './entities/account.entity';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Product } from 'src/products/entities';
 import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
@@ -39,7 +39,7 @@ export class AccountsService {
       relations: {
         account: true,
       },
-      where: { id },
+      where: { id: +id },
     });
     if (!accountProduct) {
       throw new NotFoundException(`Product not found with id: ${id}`);
@@ -114,6 +114,68 @@ export class AccountsService {
     }
 
     return account;
+  }
+
+  async findSelect(
+    productsId: string,
+  ): Promise<Array<{ id: number; quantity: number }>> {
+    if (!productsId) {
+      throw new NotFoundException('Product IDs not provided');
+    }
+
+    const productIdsArray = productsId.split(',');
+
+    const accounts = await this.accountRepository.find({
+      relations: ['product'],
+      where: { product: { id: In(productIdsArray) } },
+    });
+
+    if (accounts.length === 0) {
+      throw new NotFoundException('Accounts not found');
+    }
+
+    const countAccounts = accounts.reduce<
+      Array<{ id: number; quantity: number }>
+    >((acc, account) => {
+      const productId = account.product.id;
+      const existing = acc.find((item) => item.id === productId);
+
+      const quantityPrimary = account.quantityPrimary || 0;
+      const quantitySecondary = account.quantitySecondary || 0;
+      const extraQuantity = ['Steam', 'PlayStation 3'].includes(
+        account.typeAccount,
+      )
+        ? 1
+        : 0;
+      const totalQuantity =
+        +quantityPrimary + +quantitySecondary + +extraQuantity;
+
+      if (existing) {
+        existing.quantity += totalQuantity;
+      } else {
+        acc.push({ id: productId, quantity: totalQuantity });
+      }
+
+      return acc;
+    }, []);
+
+    return countAccounts;
+  }
+
+  async countAll(): Promise<{ total: number }> {
+    const accounts = await this.accountRepository.find();
+
+    const actives = accounts.reduce((acc, value) => {
+      let totalIndex = acc + +value.quantityPrimary + +value.quantitySecondary;
+
+      if (value.quantityPrimary === null && value.quantitySecondary === null) {
+        totalIndex += 1;
+      }
+
+      return totalIndex;
+    }, 0);
+
+    return { total: actives };
   }
 
   async update(

@@ -2,7 +2,6 @@ import { type InfoProduct } from './products/entities/info-product.entity';
 
 export interface MercadoPagoArs {
   token: string;
-  amount: number;
   email: string;
   method: string;
   type: string;
@@ -204,6 +203,7 @@ export interface ItemsDetails {
   quantityPrimary: number;
   quantitySecondary: number;
   quantitySteam: number;
+  quantityPlayStation3: number;
 }
 
 export interface ItemEmailPaid {

@@ -9,12 +9,14 @@ import axios from 'axios';
 import * as fetch from 'node-fetch';
 import { type ResponseWebHookPaypal } from 'src/types';
 import { PaymentsService } from '../payments/payments.service';
+import { WsMessageGateway } from '../ws-message/ws-message.gateway';
 
 @Injectable()
 export class PaypalWebhookService {
   constructor(
     private readonly paymentService: PaymentsService,
     private readonly configService: ConfigService,
+    private readonly wsMessageGateway: WsMessageGateway,
   ) {}
 
   private readonly API_BASE_URL: string = 'https://api-m.sandbox.paypal.com';
@@ -29,6 +31,8 @@ export class PaypalWebhookService {
     headers: Record<string, string>,
     body: ResponseWebHookPaypal,
   ): Promise<{ status: string }> {
+    const orderId = body.resource.purchase_units[0].reference_id;
+
     const validate = await this.validateWebHook(headers, body);
 
     if (validate) {
@@ -37,19 +41,32 @@ export class PaypalWebhookService {
         body.event_type === 'CHECKOUT.ORDER.COMPLETED'
       ) {
         const paymentComplete = await this.paymentService.assignedNewPayment(
-          body.resource.purchase_units[0].reference_id,
+          orderId,
           body,
         );
 
         if (paymentComplete) {
-          if (paymentComplete) {
-            return {
-              status: 'Payment completed successfully',
-            };
-          }
+          this.wsMessageGateway.sendNotification(
+            orderId,
+            'Payment completed successfully',
+          );
+          return {
+            status: 'Payment completed successfully',
+          };
         }
+      } else if (body.event_type === 'CHECKOUT.PAYMENT-APPROVAL.REVERSED') {
+        this.wsMessageGateway.sendNotification(orderId, 'Payment cancel');
+        return {
+          status: 'Payment cancel',
+        };
+      } else {
+        this.wsMessageGateway.sendNotification(orderId, 'Payment pending');
+        return {
+          status: 'Payment pending',
+        };
       }
     } else {
+      this.wsMessageGateway.sendNotification(orderId, 'Payment cancel');
       throw new BadRequestException('Something has gone wrong');
     }
   }
