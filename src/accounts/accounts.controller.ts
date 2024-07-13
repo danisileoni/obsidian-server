@@ -47,7 +47,6 @@ export class AccountsController {
   }
 
   @Get('stock/:id')
-  @Auth(ValidRoles.admin)
   async stock(@Param('id') id: string): Promise<Stock> {
     return await this.accountsService.stock(id);
   }
