@@ -234,7 +234,7 @@ export class AuthService {
 
     const user = await this.usersRepository.findOne({
       where: { id: payload.id },
-      select: { password: true },
+      select: { password: true, id: true },
     });
 
     if (!user) {
@@ -246,10 +246,7 @@ export class AuthService {
         options,
       );
 
-      await this.usersRepository.update(
-        { id: user.id },
-        { password: hashPassword },
-      );
+      await this.usersRepository.update(user.id, { password: hashPassword });
 
       return {
         message: 'ok',
