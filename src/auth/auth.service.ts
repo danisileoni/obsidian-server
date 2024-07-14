@@ -19,8 +19,9 @@ import { type JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { type ValidateGoogleDto } from '../auth/dto/validate-google.dto';
 import { ConfigService } from '@nestjs/config';
 import { type LoginDashboardDto } from './dto/login-dashboard.dto';
-import { type ForgotPasswordDto } from './dto/forgot-password.dto';
+import { type SendForgotPasswordDto } from './dto/send-forgot-password.dto';
 import { MailsService } from 'src/mails/mails.service';
+import { type ForgotPasswordDto } from './dto/forgot-password.dto';
 
 const options = {
   timeCost: 2,
@@ -181,7 +182,7 @@ export class AuthService {
   }
 
   async sendForgotPassword(
-    forgotPasswordDto: ForgotPasswordDto,
+    forgotPasswordDto: SendForgotPasswordDto,
   ): Promise<void> {
     const user = await this.usersRepository.findOneBy({
       email: forgotPasswordDto.email,
@@ -205,6 +206,49 @@ export class AuthService {
         name: user.name,
         token,
       });
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Check log server');
+    }
+  }
+
+  async forgotPassword(
+    token: string,
+    forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<User> {
+    await this.jwtService
+      .verifyAsync(token, {
+        secret: this.configService.get('JWT_SECRET'),
+      })
+      .catch(() => {
+        throw new BadRequestException('Token invalid');
+      });
+
+    if (forgotPasswordDto.password !== forgotPasswordDto.confirmPassword) {
+      throw new BadRequestException('Passwords are not the same');
+    }
+
+    const payload = this.jwtService.decode(token);
+
+    const user = await this.usersRepository.findOne({
+      where: { id: payload.id },
+      select: { password: true },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+    try {
+      user.password = await argon2.hash(forgotPasswordDto.password, options);
+
+      delete user.password;
+      delete user.roles;
+      delete user.hashRefreshToken;
+      delete user.isActive;
+
+      await this.usersRepository.save(user);
+
+      return user;
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Check log server');
