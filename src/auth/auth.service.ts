@@ -241,12 +241,12 @@ export class AuthService {
     try {
       user.password = await argon2.hash(forgotPasswordDto.password, options);
 
+      await this.usersRepository.save(user);
+
       delete user.password;
       delete user.roles;
       delete user.hashRefreshToken;
       delete user.isActive;
-
-      await this.usersRepository.save(user);
 
       return user;
     } catch (error) {
