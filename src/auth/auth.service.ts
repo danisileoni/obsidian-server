@@ -239,9 +239,15 @@ export class AuthService {
       throw new BadRequestException('User not found');
     }
     try {
-      user.password = await argon2.hash(forgotPasswordDto.password, options);
+      const hashPassword = await argon2.hash(
+        forgotPasswordDto.password,
+        options,
+      );
 
-      await this.usersRepository.save(user);
+      await this.usersRepository.update(
+        { id: user.id },
+        { password: hashPassword },
+      );
 
       delete user.password;
       delete user.roles;
