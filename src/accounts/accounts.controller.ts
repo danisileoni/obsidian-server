@@ -40,7 +40,6 @@ export class AccountsController {
   }
 
   @Get('count')
-  @Auth(ValidRoles.admin)
   async countAll(): Promise<{ total: number }> {
     return await this.accountsService.countAll();
   }
