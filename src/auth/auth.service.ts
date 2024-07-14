@@ -215,7 +215,9 @@ export class AuthService {
   async forgotPassword(
     token: string,
     forgotPasswordDto: ForgotPasswordDto,
-  ): Promise<User> {
+  ): Promise<{
+    message: string;
+  }> {
     await this.jwtService
       .verifyAsync(token, {
         secret: this.configService.get('JWT_SECRET'),
@@ -249,12 +251,9 @@ export class AuthService {
         { password: hashPassword },
       );
 
-      delete user.password;
-      delete user.roles;
-      delete user.hashRefreshToken;
-      delete user.isActive;
-
-      return user;
+      return {
+        message: 'ok',
+      };
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Check log server');
