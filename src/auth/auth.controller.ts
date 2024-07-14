@@ -25,10 +25,14 @@ import { RefreshTokenGuard } from './guards/refreshToken.guard';
 import { LoginDashboardDto } from './dto/login-dashboard.dto';
 import { SendForgotPasswordDto } from './dto/send-forgot-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
   @Post('register')
   async register(
@@ -81,10 +85,10 @@ export class AuthController {
         sameSite: 'lax',
         secure: true,
       });
-      res.redirect('http://localhost:5173');
+      res.redirect(this.configService.get('HOST_FRONT'));
     } catch (error) {
       console.log(error);
-      res.redirect('http://localhost:5173');
+      res.redirect(this.configService.get('HOST_FRONT'));
     }
   }
 
