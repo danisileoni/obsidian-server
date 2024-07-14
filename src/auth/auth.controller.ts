@@ -23,6 +23,7 @@ import { ValidRoles } from './interfaces/valid-roles.enum';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { RefreshTokenGuard } from './guards/refreshToken.guard';
 import { LoginDashboardDto } from './dto/login-dashboard.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -126,6 +127,13 @@ export class AuthController {
   @Auth(ValidRoles.user)
   async logout(@GetUser() user: User): Promise<boolean> {
     return await this.authService.logout(user.id);
+  }
+
+  @Post('send-forgot-password')
+  async sendForgotPassword(
+    @Body() forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<void> {
+    await this.authService.sendForgotPassword(forgotPasswordDto);
   }
 
   @Patch(':id')

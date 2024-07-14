@@ -59,7 +59,7 @@ export class PaypalService {
         },
       ],
       application_context: {
-        brand_name: 'obsidiandigitales.com',
+        brand_name: 'quarastore.com',
         landing_page: 'NO_PREFERENCE',
         user_action: 'PAY_NOW',
         return_url: `${this.HOST}/shopping-cart/payment/process-payment/${orderId}`,

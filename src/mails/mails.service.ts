@@ -17,10 +17,34 @@ export class MailsService {
     await this.mailerService.sendMail({
       from: this.configService.get('MAIL_FROM'),
       to: [mailUser],
-      subject: 'Aqui tienes tu compra! ObsidianDigitales',
+      subject: 'Aqui tienes tu compra! QuaraStore',
       template: './send-confirm-paid',
       context: {
         items,
+        date: new Date().getFullYear(),
+      },
+    });
+  }
+
+  async sendForgotPassword({
+    mailUser,
+    token,
+    name,
+  }: {
+    mailUser: string;
+    token: string;
+    name: string;
+  }): Promise<void> {
+    const resetLink = `${this.configService.get('HOST_FRONT')}/auth/forgot-password/${token}`;
+
+    await this.mailerService.sendMail({
+      from: this.configService.get('MAIL_FROM'),
+      to: [mailUser],
+      subject: 'Recuperación de contraseña! QuaraStore',
+      template: './send-forgot-password',
+      context: {
+        name,
+        resetLink,
         date: new Date().getFullYear(),
       },
     });

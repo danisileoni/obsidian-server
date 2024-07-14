@@ -9,6 +9,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
 import { SessionSerializer } from './utils/serializer';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
+import { MailsModule } from 'src/mails/mails.module';
 
 @Module({
   controllers: [AuthController],
@@ -24,6 +25,7 @@ import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
     ConfigModule,
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({}),
+    MailsModule,
   ],
   exports: [
     JwtModule,

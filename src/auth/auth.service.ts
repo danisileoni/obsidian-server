@@ -19,6 +19,8 @@ import { type JwtPayload } from '../auth/interfaces/jwt-payload.interface';
 import { type ValidateGoogleDto } from '../auth/dto/validate-google.dto';
 import { ConfigService } from '@nestjs/config';
 import { type LoginDashboardDto } from './dto/login-dashboard.dto';
+import { type ForgotPasswordDto } from './dto/forgot-password.dto';
+import { MailsService } from 'src/mails/mails.service';
 
 const options = {
   timeCost: 2,
@@ -35,6 +37,7 @@ export class AuthService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailsService,
     readonly configService: ConfigService,
   ) {}
 
@@ -174,6 +177,37 @@ export class AuthService {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException('Check logs Server');
+    }
+  }
+
+  async sendForgotPassword(
+    forgotPasswordDto: ForgotPasswordDto,
+  ): Promise<void> {
+    const user = await this.usersRepository.findOneBy({
+      email: forgotPasswordDto.email,
+    });
+    if (!user) {
+      throw new BadRequestException(
+        `User not found with email: ${forgotPasswordDto.email}`,
+      );
+    }
+    try {
+      const token = await this.jwtService.signAsync(
+        { id: user.id },
+        {
+          secret: this.configService.get('JWT_SECRET'),
+          expiresIn: 60 * 10,
+        },
+      );
+
+      await this.mailService.sendForgotPassword({
+        mailUser: user.email,
+        name: user.name,
+        token,
+      });
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException('Check log server');
     }
   }
 
