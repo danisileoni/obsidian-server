@@ -69,7 +69,7 @@ export class PaypalService {
 
     console.log(body.purchase_units.map(item => {
       return item.items.map(item => {
-        return item
+        return 
       })
     }))
 
@@ -150,46 +150,37 @@ export class PaypalService {
           description: item.product.infoProduct.description,
           quantity: (() => {
             if (item.quantityPrimary > 0) {
-              return item.quantityPrimary;
+              return +item.quantityPrimary;
             }
             if (item.quantitySecondary > 0) {
-              return item.quantitySecondary;
+              return +item.quantitySecondary;
             }
             if (item.quantitySteam > 0) {
-              return item.quantitySteam;
+              return +item.quantitySteam;
             }
             if (item.quantityPlayStation3 > 0) {
-              return item.quantityPlayStation3;
+              return +item.quantityPlayStation3;
             }
           })(),
           amount: (() => {
             if (item.quantityPrimary > 0) {
               if (item.product.sale) {
-                return parseFloat(
-                  (item.product.sale.salePrimary / data.venta).toFixed(2),
-                );
+                return +(+item.product.sale.salePrimary / +data.venta).toFixed(2)
+                
               }
-              return parseFloat(
-                (item.product.pricePrimary / data.venta).toFixed(2),
-              );
+              return +(+item.product.pricePrimary / +data.venta).toFixed(2)
             }
             if (item.quantitySecondary > 0) {
               if (item.product.sale) {
-                return parseFloat(
-                  (item.product.sale.saleSecondary / data.venta).toFixed(2),
-                );
+                return +(+item.product.sale.saleSecondary / +data.venta).toFixed(2)
               }
-              return parseFloat(
-                (item.product.priceSecondary / data.venta).toFixed(2),
-              );
+              return +(+item.product.priceSecondary / +data.venta).toFixed(2)
             }
             if (!(item.quantityPrimary > 0 && item.quantitySecondary > 0)) {
               if (item.product.sale) {
-                return parseFloat(
-                  (item.product.sale.salePrice / data.venta).toFixed(2),
-                );
+                return +(+item.product.sale.salePrice / +data.venta).toFixed(2)
               }
-              return parseFloat((item.product.price / data.venta).toFixed(2));
+              return +(+item.product.price / +data.venta).toFixed(2);
             }
             throw new InternalServerErrorException();
           })(),
