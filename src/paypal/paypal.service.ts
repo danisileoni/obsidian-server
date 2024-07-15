@@ -30,6 +30,7 @@ export class PaypalService {
 
   async create(items: Order, orderId: string): Promise<PaypalResponse> {
     const itemsConvertUSD = await this.convertUSD(items);
+    console.log(itemsConvertUSD.toString())
 
     const body = {
       intent: 'CAPTURE',
