@@ -67,6 +67,8 @@ export class PaypalService {
       },
     };
 
+    console.log(body)
+
     const params = new URLSearchParams();
     params.append('grant_type', 'client_credentials');
 
