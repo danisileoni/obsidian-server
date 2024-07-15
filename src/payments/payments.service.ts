@@ -235,8 +235,10 @@ export class PaymentsService {
           return {
             id: detail.product.id,
             title: detail.product.infoProduct.title,
-            typeAccount: detail.product.platform.namePlatform,
+            typeAccount: detail.quantityPrimary > 0 ? 'Primaria' : 'Secundaria',
+            platformAccount: detail.product.platform.namePlatform,
             userEmail: orderToPaid.user.email,
+            userId: orderToPaid.user.id,
           };
         }
       });

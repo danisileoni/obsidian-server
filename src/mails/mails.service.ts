@@ -27,12 +27,14 @@ export class MailsService {
   }
 
   async sendMissingAccounts(
-    items: Array<{
+    items: {
       id: number;
       title: string;
       typeAccount: string;
+      platformAccount: string;
       userEmail: string;
-    }>,
+      userId: string;
+    }[],
   ): Promise<void> {
     await this.mailerService.sendMail({
       from: this.configService.get('MAIL_FROM'),
