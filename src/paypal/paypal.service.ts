@@ -166,20 +166,20 @@ export class PaypalService {
           })(),
           amount: (() => {
             if (item.quantityPrimary > 0) {
-              if (item.product.sale) {
+              if (item.product.sale !== null) {
                 return +(+item.product.sale.salePrimary / +data.venta).toFixed(2)
                 
               }
               return +(+item.product.pricePrimary / +data.venta).toFixed(2)
             }
             if (item.quantitySecondary > 0) {
-              if (item.product.sale) {
+              if (item.product.sale !== null) {
                 return +(+item.product.sale.saleSecondary / +data.venta).toFixed(2)
               }
               return +(+item.product.priceSecondary / +data.venta).toFixed(2)
             }
             if (!(item.quantityPrimary > 0 && item.quantitySecondary > 0)) {
-              if (item.product.sale) {
+              if (item.product.sale !== null) {
                 return +(+item.product.sale.salePrice / +data.venta).toFixed(2)
               }
               return +(+item.product.price / +data.venta).toFixed(2);
