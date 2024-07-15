@@ -86,14 +86,16 @@
 <body>
   <div class="container">
     <h1 class="title">Juegos a enviar</h1>
+    <h3>FECHA: {{dateDay}}</h3>
 
     <ul>
       {{#each items}}
         <li class="card">
           <div class="card-div">
-            <h3>Titulo del producto{{this.title}}</h3>
-            <h3>ID del Producto{{this.id}}</h3>
+            <h3>Titulo del producto: {{this.title}}</h3>
+            <h3>ID del Producto: {{this.id}}</h3>
             <h3>Plataforma: {{this.platformAccount}}</h3>
+            <h3>Tipo de cuenta: {{this.typeAccount}}</h3>
             <p>Email a enviar: {{this.userEmail}}</p>
             <p>ID del usuario: {{this.userId}}</p>
           </div>
