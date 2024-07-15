@@ -29,7 +29,7 @@ export class PaypalService {
   }
 
   async create(items: Order, orderId: string): Promise<PaypalResponse> {
-    console.log(items.toString())
+    console.log(JSON.stringify(items))
     const itemsConvertUSD = await this.convertUSD(items);
     console.log(itemsConvertUSD.toString())
 
