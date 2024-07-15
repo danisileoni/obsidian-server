@@ -67,7 +67,11 @@ export class PaypalService {
       },
     };
 
-    console.log(body)
+    console.log(body.purchase_units.map(item => {
+      return item.items.map(item => {
+        return item
+      })
+    }))
 
     const params = new URLSearchParams();
     params.append('grant_type', 'client_credentials');
