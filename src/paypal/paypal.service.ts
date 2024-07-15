@@ -193,11 +193,11 @@ export class PaypalService {
       let amountConvert: number = 0;
 
       amountUnitsConvert.forEach((amount) => {
-        amountConvert += amount.amount * amount.quantity;
+        amountConvert += +amount.amount * +amount.quantity;
       });
 
       return {
-        amountConvert,
+        amountConvert: +amountConvert.toFixed(2),
         amountUnitsConvert,
       };
     } catch (error) {
