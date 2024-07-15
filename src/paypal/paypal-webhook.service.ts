@@ -19,7 +19,9 @@ export class PaypalWebhookService {
     private readonly wsMessageGateway: WsMessageGateway,
   ) {}
 
-  private readonly API_BASE_URL: string = 'https://api-m.sandbox.paypal.com';
+  private readonly API_BASE_URL: string =
+    this.configService.get('API_URL_PAYPAL');
+
   private readonly CLIENT_ID: string =
     this.configService.get('API_CLIENT_PAYPAL');
 
@@ -74,22 +76,19 @@ export class PaypalWebhookService {
   async webHookSimulation(): Promise<boolean> {
     const access_token = await this.getAccessToken();
 
-    await fetch(
-      'https://api-m.sandbox.paypal.com/v1/notifications/simulate-event',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${access_token}`,
-        },
-        body: JSON.stringify({
-          webhook_id: this.WEBHOOK_ID,
-          url: 'https://eebb-8-243-19-10.ngrok-free.app/api/v1/paypal-webhook',
-          event_type: 'CHECKOUT.ORDER.COMPLETED',
-          resource_version: '2.0',
-        }),
+    await fetch(`${this.API_BASE_URL}/v1/notifications/simulate-event`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${access_token}`,
       },
-    ).catch((error) => {
+      body: JSON.stringify({
+        webhook_id: this.WEBHOOK_ID,
+        url: 'https://eebb-8-243-19-10.ngrok-free.app/api/v1/paypal-webhook',
+        event_type: 'CHECKOUT.ORDER.COMPLETED',
+        resource_version: '2.0',
+      }),
+    }).catch((error) => {
       console.log(error);
       throw new InternalServerErrorException('Check log server');
     });
