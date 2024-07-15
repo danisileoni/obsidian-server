@@ -122,10 +122,11 @@ export class AuthController {
   }
 
   @Get('verify-access-dashboard')
+  @Auth(ValidRoles.admin)
   async verifyAccessTokenDashboard(@Req() req: Request): Promise<any> {
     const headers = req.headers['authorization'];
     const token: string = headers && headers.split(' ')[1];
-    return await this.authService.verifyAccessToken(token);
+    return await this.authService.verifyAccessTokenDashboard(token);
   }
 
   @Post('logout')
