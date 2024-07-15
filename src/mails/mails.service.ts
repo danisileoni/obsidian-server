@@ -44,7 +44,7 @@ export class MailsService {
       context: {
         items,
         date: new Date().getFullYear(),
-        dateDay: new Date().getDate(),
+        dateDay: new Date(),
       },
     });
   }
