@@ -197,7 +197,7 @@ export class AuthService {
         { id: user.id },
         {
           secret: this.configService.get('JWT_SECRET'),
-          expiresIn: 60 * 10,
+          expiresIn: 60 * 8,
         },
       );
 
