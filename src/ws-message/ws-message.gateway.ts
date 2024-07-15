@@ -6,7 +6,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, type Socket } from 'socket.io';
 
-@WebSocketGateway(8081, { cors: true })
+@WebSocketGateway(8081, { cors: true, namespace: 'process-order' })
 export class WsMessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
