@@ -92,7 +92,8 @@ export class OrdersService {
     const order = this.orderRepository.create({
       user,
       total: totalPrice,
-      details: productsMap.map((product, index: number) => {
+      details: productsMap.map((product) => {
+        const index = createOrderDto.items.findIndex(item => +item.idProduct === product.id)
         return this.ordersDetailsRepository.create({
           product,
           quantityPrimary: createOrderDto.items[index].quantityPrimary,
