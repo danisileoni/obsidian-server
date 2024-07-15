@@ -26,6 +26,26 @@ export class MailsService {
     });
   }
 
+  async sendMissingAccounts(
+    items: Array<{
+      id: number;
+      title: string;
+      typeAccount: string;
+      userEmail: string;
+    }>,
+  ): Promise<void> {
+    await this.mailerService.sendMail({
+      from: this.configService.get('MAIL_FROM'),
+      to: ['quarastorecontact@gmail.com'],
+      subject: 'Juegos a enviar!',
+      template: './send-missing-accounts',
+      context: {
+        items,
+        date: new Date().getFullYear(),
+      },
+    });
+  }
+
   async sendForgotPassword({
     mailUser,
     token,

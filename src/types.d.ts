@@ -214,6 +214,7 @@ export interface ItemEmailPaid {
   email: string;
   password: string;
   id_account: string;
+  product_id: number;
 }
 
 export interface ViewProduct {

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email de Agradecimiento</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #eeeeee;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .title {
+      text-align: center;
+      color: #333;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+    .sub-title {
+      text-align: center;
+      color: #555;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    .card {
+      display: flex;
+      align-items: center;
+      background-color: #f9f9f9;
+      border-radius: 4px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      margin-top: 20px;
+      padding: 15px;
+      transition: background-color 0.3s ease;
+    }
+    .card:hover {
+      background-color: #f0f0f0;
+    }
+    .image {
+      width: 100px;
+      height: auto;
+      border-radius: 4px;
+      margin-right: 15px;
+    }
+    .card-div {
+      flex: 1;
+    }
+    .card-div h3 {
+      color: #333;
+      font-size: 16px;
+      margin: 0 0 5px 0;
+    }
+    .card-div h4 {
+      color: #666;
+      font-size: 14px;
+      margin: 0 0 5px 0;
+    }
+    .card-div p {
+      color: #888;
+      font-size: 12px;
+      margin: 0;
+    }
+    .footer {
+      text-align: center;
+      font-size: 12px;
+      color: #aaaaaa;
+      margin-top: 30px;
+    }
+    .pdf {
+      max-width: 150px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">Juegos a enviar</h1>
+
+    <ul>
+      {{#each items}}
+        <li class="card">
+          <div class="card-div">
+            <h3>{{this.title}}</h3>
+            <h3>{{this.id}}</h3>
+            <h3>Plataforma: {{this.typeAccount}}</h3>
+            <p>Email al enviar: {{this.userEmail}}</p>
+          </div>
+        </li>
+      {{/each}}
+    </ul>
+
+    <div class="footer">
+      <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
+      <p>©{{date}} QuaraStore. Todos los derechos reservados.</p>
+    </div>
+  </div>
+</body>
+</html>

@@ -183,7 +183,16 @@ export class PaymentsService {
     await queryRunner.startTransaction();
 
     try {
-      const orderToPaid = await this.orderRepository.findOneBy({ id: idOrder });
+      const orderToPaid = await this.orderRepository.findOne({
+        where: { id: idOrder },
+        relations: {
+          details: {
+            product: {
+              infoProduct: true,
+            },
+          },
+        },
+      });
       if (!orderToPaid) {
         throw new NotFoundException(`Order not found with id: ${idOrder}`);
       }
@@ -213,13 +222,34 @@ export class PaymentsService {
           platform_name: account.platform_name,
           type_account: account.type_account,
           id_account: account.id_account,
+          product_id: account.product_id,
         };
       });
 
-      await this.mailsService.sendConfirmPaid(
-        orderToPaid.user.email,
-        deCryptAccount,
-      );
+      const missingAccount = orderToPaid.details.map((detail) => {
+        const filterProduct = deCryptAccount.filter(
+          (item) => item.product_id === detail.product.id,
+        );
+        if (!filterProduct) {
+          return {
+            id: detail.product.id,
+            title: detail.product.infoProduct.title,
+            typeAccount: detail.product.platform.namePlatform,
+            userEmail: orderToPaid.user.email,
+          };
+        }
+      });
+
+      if (missingAccount.length > 0) {
+        await this.mailsService.sendMissingAccounts(missingAccount);
+      }
+
+      if (deCryptAccount.length > 0) {
+        await this.mailsService.sendConfirmPaid(
+          orderToPaid.user.email,
+          deCryptAccount,
+        );
+      }
 
       await queryRunner.manager.save(payment);
 
