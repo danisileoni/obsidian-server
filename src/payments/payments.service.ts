@@ -189,6 +189,7 @@ export class PaymentsService {
           details: {
             product: {
               infoProduct: true,
+              platform: true,
             },
           },
         },
@@ -226,13 +227,10 @@ export class PaymentsService {
         };
       });
 
-      console.log(deCryptAccount);
-
       const missingAccount = orderToPaid.details.map((detail) => {
         const filterProduct = deCryptAccount.filter(
           (item) => item.product_id === detail.product.id,
         );
-        console.log(filterProduct);
         if (filterProduct.length === 0) {
           return {
             id: detail.product.id,
