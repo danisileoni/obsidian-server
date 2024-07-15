@@ -230,7 +230,7 @@ export class PaymentsService {
         const filterProduct = deCryptAccount.filter(
           (item) => item.product_id === detail.product.id,
         );
-        if (!filterProduct) {
+        if (filterProduct.length === 0) {
           return {
             id: detail.product.id,
             title: detail.product.infoProduct.title,
