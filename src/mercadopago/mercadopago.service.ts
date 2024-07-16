@@ -101,7 +101,7 @@ export class MercadopagoService {
           payment_method_id: method,
           installments: 1,
           metadata: { id_order: idOrder },
-          notification_url: `${this.configService.get('HOST_TEST')}/mercadopago/webhook-mp`,
+          notification_url: `${this.configService.get('HOST')}/mercadopago/webhook-mp`,
         },
       });
 

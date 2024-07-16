@@ -4,7 +4,6 @@ import { ValidationPipe } from '@nestjs/common';
 import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
 import * as passport from 'passport';
-import * as csurf from 'csurf';
 import { v4 as uuid } from 'uuid';
 import * as cors from 'cors';
 
@@ -42,7 +41,6 @@ async function bootstrap(): Promise<void> {
   app.use(passport.initialize());
   app.use(passport.session());
   app.use(cookieParser());
-  // app.use(csurf());
 
   await app.listen(3000);
 }
