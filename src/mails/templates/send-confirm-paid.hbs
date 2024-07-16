@@ -1,117 +1,743 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Email de Agradecimiento</title>
-  <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #eeeeee;
-      margin: 0;
-      padding: 0;
-    }
-    .container {
-      max-width: 600px;
-      margin: 40px auto;
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-    .title {
-      text-align: center;
-      color: #333;
-      font-size: 24px;
-      margin-bottom: 10px;
-    }
-    .sub-title {
-      text-align: center;
-      color: #555;
-      font-size: 18px;
-      margin-bottom: 20px;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-    }
-    .card {
-      display: flex;
-      align-items: center;
-      background-color: #f9f9f9;
-      border-radius: 4px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      margin-top: 20px;
-      padding: 15px;
-      transition: background-color 0.3s ease;
-    }
-    .card:hover {
-      background-color: #f0f0f0;
-    }
-    .image {
-      width: 100px;
-      height: auto;
-      border-radius: 4px;
-      margin-right: 15px;
-    }
-    .card-div {
-      flex: 1;
-    }
-    .card-div h3 {
-      color: #333;
-      font-size: 16px;
-      margin: 0 0 5px 0;
-    }
-    .card-div h4 {
-      color: #666;
-      font-size: 14px;
-      margin: 0 0 5px 0;
-    }
-    .card-div p {
-      color: #888;
-      font-size: 12px;
-      margin: 0;
-    }
-    .footer {
-      text-align: center;
-      font-size: 12px;
-      color: #aaaaaa;
-      margin-top: 30px;
-    }
-    .pdf {
-      max-width: 150px;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1 class="title">MUCHAS GRACIAS POR TU COMPRA</h1>
-    <h3 class="sub-title">Aquí tienes tus juegos</h3>
+<html
+  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns:v="urn:schemas-microsoft-com:vml"
+  xmlns:o="urn:schemas-microsoft-com:office:office"
+>
+  <head>
+    <title></title>
+    <!--[if !mso]><!-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!--<![endif]-->
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style type="text/css">
+      #outlook a {
+        padding: 0;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+      }
+      table,
+      td {
+        border-collapse: collapse;
+        mso-table-lspace: 0pt;
+        mso-table-rspace: 0pt;
+      }
+      img {
+        border: 0;
+        height: auto;
+        line-height: 100%;
+        outline: none;
+        text-decoration: none;
+        -ms-interpolation-mode: bicubic;
+      }
+      p {
+        display: block;
+        margin: 13px 0;
+      }
+    </style>
 
-    <ul>
-      {{#each items}}
-        <li class="card">
-          <img class="image" src="{{this.image_url}}" alt="{{this.product_name}}">
-          <div class="card-div">
-            <h3>{{this.product_name}}</h3>
-            <h3>Plataforma: {{this.platform_name}}</h3>
-            <h4>Cuenta: {{this.type_account}}</h4>
-            <p>Email: {{this.email}}</p>
-            <p>Contraseña: {{this.password}}</p>
-          </div>
-        </li>
-      {{/each}}
-    </ul>
+    <link
+      href="https://fonts.googleapis.com/css?family=Open+Sans:400,700"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Ubuntu:400,700"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link
+      href="https://fonts.googleapis.com/css?family=Cabin:400,700"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <style type="text/css">
+      @import url(https://fonts.googleapis.com/css?family=Open+Sans:400,700);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu:400,700);
+      @import url(https://fonts.googleapis.com/css?family=Cabin:400,700);
+    </style>
 
-    <h3 class="sub-title">Intrucciones:</h3>
-    <a href="https://drive.google.com/drive/folders/1wYcwRgTaweb-Ss8G_Wk7fdsXBhA2DAXa">
-      <img src="https://res.cloudinary.com/dmkxchhse/image/upload/v1721004847/aoobjgvcr6cje0gx1iyo.webp" class="pdf">
-    </a>
+    <style type="text/css">
+      @media only screen and (min-width: 480px) {
+        .mj-column-per-100 {
+          width: 100% !important;
+          max-width: 100%;
+        }
+      }
+    </style>
+    <style media="screen and (min-width:480px)">
+      .moz-text-html .mj-column-per-100 {
+        width: 100% !important;
+        max-width: 100%;
+      }
+    </style>
 
-    <div class="footer">
-      <p>Si tienes alguna pregunta, no dudes en contactarnos.</p>
-      <p>©{{date}} QuaraStore. Todos los derechos reservados.</p>
+    <style type="text/css">
+      @media only screen and (max-wid-w: 479px) {
+        table.mj-full-width-mobile {
+          width: 100% !important;
+        }
+        td.mj-full-width-mobile {
+          width: auto !important;
+        }
+      }
+    </style>
+    <style type="text/css">
+      .hide_on_mobile {
+        display: none !important;
+      }
+      @media only screen and (min-width: 480px) {
+        .hide_on_mobile {
+          display: block !important;
+        }
+      }
+      .hide_section_on_mobile {
+        display: none !important;
+      }
+      @media only screen and (min-width: 480px) {
+        .hide_section_on_mobile {
+          display: table !important;
+        }
+
+        div.hide_section_on_mobile {
+          display: block !important;
+        }
+      }
+      .hide_on_desktop {
+        display: block !important;
+      }
+      @media only screen and (min-width: 480px) {
+        .hide_on_desktop {
+          display: none !important;
+        }
+      }
+      .hide_section_on_desktop {
+        display: table !important;
+        width: 100%;
+      }
+      @media only screen and (min-width: 480px) {
+        .hide_section_on_desktop {
+          display: none !important;
+        }
+      }
+
+      p,
+      h1,
+      h2,
+      h3 {
+        margin: 0px;
+      }
+
+      ul,
+      li,
+      ol {
+        font-size: 11px;
+        font-family: Ubuntu, Helvetica, Arial;
+      }
+
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+
+      @media only screen and (max-width: 480px) {
+        .mj-column-per-100 {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+        .mj-column-per-100 > .mj-column-per-100 {
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+      }
+    </style>
+  </head>
+  <body style="word-spacing: normal; background-color: #ffffff">
+    <div style="background-color: #ffffff">
+      <div
+        style="
+          background: #ffffff;
+          background-color: #ffffff;
+          margin: 0px auto;
+          max-width: 600px;
+        "
+      >
+        <table
+          align="center"
+          border="0"
+          cellpadding="0"
+          cellspacing="0"
+          role="presentation"
+          style="background: #ffffff; background-color: #ffffff; width: 100%"
+        >
+          <tbody>
+            <tr>
+              <td
+                style="
+                  direction: ltr;
+                  font-size: 0px;
+                  padding: 10px 0px 10px 0px;
+                  text-align: center;
+                "
+              >
+                <div
+                  class="mj-column-per-100 mj-outlook-group-fix"
+                  style="
+                    font-size: 0px;
+                    text-align: left;
+                    direction: ltr;
+                    display: inline-block;
+                    vertical-align: top;
+                    width: 100%;
+                  "
+                >
+                  <table
+                    border="0"
+                    cellpadding="0"
+                    cellspacing="0"
+                    role="presentation"
+                    style="vertical-align: top"
+                    width="100%"
+                  >
+                    <tbody>
+                      <tr>
+                        <td
+                          align="center"
+                          style="
+                            font-size: 0px;
+                            padding: 0px 0px 0px 0px;
+                            word-break: break-word;
+                          "
+                        >
+                          <table
+                            border="0"
+                            cellpadding="0"
+                            cellspacing="0"
+                            role="presentation"
+                            style="
+                              border-collapse: collapse;
+                              border-spacing: 0px;
+                            "
+                          >
+                            <tbody>
+                              <tr>
+                                <td style="width: 108px">
+                                  <img
+                                    src="https://storage.googleapis.com/topol-web/uploads/66955e71ba430/1721065267.jpg"
+                                    style="
+                                      border: 0;
+                                      border-radius: 0px 0px 0px 0px;
+                                      display: block;
+                                      outline: none;
+                                      text-decoration: none;
+                                      height: auto;
+                                      width: 100%;
+                                      font-size: 13px;
+                                    "
+                                    width="108"
+                                    height="auto"
+                                  />
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td
+                          align="left"
+                          style="
+                            font-size: 0px;
+                            padding: 15px 15px 15px 15px;
+                            word-break: break-word;
+                          "
+                        >
+                          <div
+                            style="
+                              font-family: Ubuntu, Helvetica, Arial, sans-serif;
+                              font-size: 13px;
+                              line-height: 1.5;
+                              text-align: left;
+                              color: #000000;
+                            "
+                          >
+                            <p
+                              style="
+                                font-family: Ubuntu, Helvetica, Arial;
+                                font-size: 11px;
+                              "
+                            >
+                              <span
+                                style="font-family: 'Open Sans', sans-serif"
+                              >
+                              </span
+                              ><a
+                                href="https://www.google.com/"
+                                target="_blank"
+                                rel="noopener"
+                                style="color: #0000ee"
+                                ><span style="font-size: 20px"
+                                  ><strong
+                                    ><span
+                                      style="
+                                        font-family: 'Open Sans', sans-serif;
+                                        color: rgb(42, 62, 94);
+                                      "
+                                      data-darkreader-inline-color
+                                      ><span
+                                        style="color: rgb(74, 98, 129)"
+                                        data-darkreader-inline-color
+                                        >¡Muchas Gracias por tu compra! </span
+                                      ><span
+                                        style="color: rgb(74, 98, 129)"
+                                        data-darkreader-inline-color
+                                        >► </span
+                                      ><br /></span></strong></span
+                              ></a>
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td
+                          align="left"
+                          style="
+                            font-size: 0px;
+                            padding: 15px 15px 15px 15px;
+                            word-break: break-word;
+                          "
+                        >
+                          <div
+                            style="
+                              font-family: Ubuntu, Helvetica, Arial, sans-serif;
+                              font-size: 13px;
+                              line-height: 1.5;
+                              text-align: left;
+                              color: #000000;
+                            "
+                          >
+                            <p
+                              style="
+                                font-family: Ubuntu, Helvetica, Arial;
+                                font-size: 11px;
+                              "
+                            >
+                              <em
+                                ><strong
+                                  ><span
+                                    style="
+                                      font-size: 14px;
+                                      font-family: 'Open Sans', sans-serif;
+                                      color: rgb(42, 62, 94);
+                                      --darkreader-inline-color: #a3bdd6;
+                                    "
+                                    data-darkreader-inline-color
+                                    >Hola,</span
+                                  ></strong
+                                ></em
+                              >
+                            </p>
+                            <p
+                              style="
+                                font-family: Ubuntu, Helvetica, Arial;
+                                font-size: 11px;
+                              "
+                            ></p>
+                            <p
+                              style="
+                                font-family: Ubuntu, Helvetica, Arial;
+                                font-size: 11px;
+                              "
+                            >
+                              <em
+                                ><strong
+                                  ><span
+                                    style="
+                                      font-size: 14px;
+                                      font-family: 'Open Sans', sans-serif;
+                                      color: rgb(42, 62, 94);
+                                      --darkreader-inline-color: #a3bdd6;
+                                    "
+                                    data-darkreader-inline-color
+                                    >A continuación, le proporcionaremos los datos correspondientes a su cuenta.
+
+                                    Le recordamos que es importante leer el instructivo del juego que le hemos enviado al final del correo electrónico (por favor, siga las instrucciones de acuerdo con la compra que realizó).
+                                    
+                                    En caso de incumplimiento de las normativas establecidas, nos veremos en la obligación de proceder con el bloqueo de la cuenta.</span
+                                  ></strong
+                                ></em
+                              >
+                            </p>
+                            <ul>
+                              {{#each items}}
+                              <li style="display: flex; align-items: center; margin-top: 20px;">
+                                <img
+                                  style="margin-right: 10px; width: 75px; height: auto; border-radius: 8px;"
+                                  class="image" src="{{this.image_url}}" alt="{{this.product_name}}"
+                                />
+                                <div style="font-family: Ubuntu, Helvetica, Arial; font-size: 14px;">
+                                  <strong style="font-family: Georgia, sans-serif; font-size: 14px; color: #236fa1;">
+                                    JUEGO: {{this.product_name}}
+                                  </strong>
+                                  <br />
+                                  <span style=" font-family: Ubuntu, sans-serif; color: #236fa1; font-weight: bold;">Plataforma: {{this.platform_name}}</span>
+                                  <span style=" font-family: Ubuntu, sans-serif; color: #236fa1; font-weight: bold;">Cuenta: {{this.type_account}}</span>
+                                  <br />
+                                  <span style="font-size: 14px; color: #2a3e5e;">
+                                    <strong style="color: #236fa1;">Correo: {{this.email}}</strong>
+                                  </span>
+                                  <br />
+                                  <span style="font-size: 14px; color: #2a3e5e;">
+                                    <strong style="color: #236fa1;">Contraseña: {{this.password}}</strong>
+                                  </span>
+                                </div>
+                              </li>
+                              {{/each}}
+                            </ul>
+                            <p
+                              style="
+                                font-family: Ubuntu, Helvetica, Arial;
+                                font-size: 11px;
+                              "
+                            >
+                                <br /><span
+                                  style="
+                                    color: rgb(35, 111, 161);
+                                    --darkreader-inline-color: #64addd;
+                                  "
+                                  data-darkreader-inline-color
+                                  ><strong
+                                    >Para recibir el codigó de inicio a la
+                                    cuenta, comunicate al whatsapp
+                                    (3517410781)</strong
+                                  ></span
+                                ></span
+                              >
+                            </p>
+                            <p
+                              style="
+                                font-family: Ubuntu, Helvetica, Arial;
+                                font-size: 11px;
+                              "
+                            ></p>
+                            <p
+                              style="
+                                font-family: Ubuntu, Helvetica, Arial;
+                                font-size: 11px;
+                              "
+                            >
+                              <span style="font-family: Georgia, sans-serif"
+                                ><strong
+                                  ><span
+                                    style="
+                                      font-size: 14px;
+                                      color: rgb(42, 62, 94);
+                                      --darkreader-inline-color: #a3bdd6;
+                                    "
+                                    data-darkreader-inline-color
+                                    >Desde ya, Muchas Gracias por confiar en
+                                    @Quarastore.<br />▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬<br /></span></strong
+                              ></span>
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td
+                          align="left"
+                          style="
+                            font-size: 0px;
+                            padding: 15px 15px 15px 15px;
+                            word-break: break-word;
+                          "
+                        >
+                          <div
+                            style="
+                              font-family: Ubuntu, Helvetica, Arial, sans-serif;
+                              font-size: 13px;
+                              line-height: 1.5;
+                              text-align: left;
+                              color: #000000;
+                            "
+                          >
+                            <p
+                              style="
+                                font-family: Ubuntu, Helvetica, Arial;
+                                font-size: 11px;
+                              "
+                            >
+                              <span
+                                style="
+                                  text-decoration: underline;
+                                  background-color: rgb(236, 240, 241);
+                                "
+                                ><strong
+                                  ><span
+                                    style="
+                                      font-size: 12px;
+                                      background-color: rgb(236, 240, 241);
+                                    "
+                                    >INSTRUCTIVOS PARA ACCEDER A LAS DIFERENTES
+                                    TIPOS DE GUIAS:</span
+                                  ></strong
+                                ></span
+                              ><br /><br /><strong>- PRIMARIA</strong
+                              ><br /><strong>- SECUNDARIA</strong><br /><strong
+                                >- STEAM</strong
+                              ><br /><br />
+                            </p>
+                            <p
+                              style="
+                                font-family: Ubuntu, Helvetica, Arial;
+                                font-size: 11px;
+                              "
+                            >
+                              <strong
+                                ><span
+                                  style="
+                                    font-size: 13px;
+                                    color: rgb(186, 55, 42);
+                                  "
+                                  ><span
+                                    style="
+                                      text-decoration: underline;
+                                      font-size: 14px;
+                                    "
+                                    >Se recuerda a todos los usuarios que es
+                                    imperativo seguir estrictamente la guía
+                                    proporcionada con la cuenta adquirida. El
+                                    incumplimiento de estas directrices puede
+                                    resultar en la suspensión o baneo de tu
+                                    usuario.</span
+                                  ><br /></span
+                              ></strong>
+                            </p>
+                            <p
+                              style="
+                                font-family: Ubuntu, Helvetica, Arial;
+                                font-size: 11px;
+                              "
+                            >
+                              <strong
+                                ><span
+                                  style="
+                                    font-size: 13px;
+                                    color: rgb(186, 55, 42);
+                                  "
+                                  >Agradecemos tu comprensión y colaboración
+                                  para asegurar el cumplimiento de estas
+                                  normas.</span
+                                ></strong
+                              >
+                            </p>
+                            <p
+                              style="
+                                font-family: Ubuntu, Helvetica, Arial;
+                                font-size: 11px;
+                              "
+                            >
+                              <strong
+                                ><span
+                                  style="
+                                    font-size: 13px;
+                                    color: rgb(186, 55, 42);
+                                  "
+                                  >Atentamente,</span
+                                ></strong
+                              ><br /><strong
+                                ><span
+                                  style="
+                                    font-size: 13px;
+                                    color: rgb(186, 55, 42);
+                                  "
+                                  >Quarastore, Equipo de Soporte!<br />▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬▬<br /></span
+                              ></strong>
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td
+                          align="center"
+                          vertical-align="middle"
+                          style="
+                            font-size: 0px;
+                            padding: 20px 20px 20px 20px;
+                            word-break: break-word;
+                          "
+                        >
+                          <table
+                            border="0"
+                            cellpadding="0"
+                            cellspacing="0"
+                            role="presentation"
+                            style="border-collapse: separate; line-height: 100%"
+                          >
+                            <tbody>
+                              <tr>
+                                <td
+                                  align="center"
+                                  bgcolor="#e85034"
+                                  role="presentation"
+                                  style="
+                                    border: none;
+                                    border-radius: 8px;
+                                    cursor: auto;
+                                    font-style: normal;
+                                    mso-padding-alt: 10px 20px 10px 20px;
+                                    background: #e85034;
+                                  "
+                                  valign="middle"
+                                >
+                                  <a
+                                    href="https://drive.google.com/drive/u/2/folders/1wYcwRgTaweb-Ss8G_Wk7fdsXBhA2DAXa"
+                                    style="
+                                      display: inline-block;
+                                      background: #e85034;
+                                      color: #ffffff;
+                                      font-family: Ubuntu, Helvetica, Arial,
+                                        sans-serif, Helvetica, Arial, sans-serif;
+                                      font-size: 13px;
+                                      font-style: normal;
+                                      font-weight: normal;
+                                      line-height: 100%;
+                                      margin: 0;
+                                      text-decoration: none;
+                                      text-transform: none;
+                                      padding: 10px 20px 10px 20px;
+                                      mso-padding-alt: 0px;
+                                      border-radius: 8px;
+                                    "
+                                    target="_blank"
+                                  >
+                                    <span>INSTRUCTIVOS</span>
+                                  </a>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td
+                          align="center"
+                          vertical-align="middle"
+                          style="
+                            font-size: 0px;
+                            padding: 20px 20px 20px 20px;
+                            word-break: break-word;
+                          "
+                        >
+                          <table
+                            border="0"
+                            cellpadding="0"
+                            cellspacing="0"
+                            role="presentation"
+                            style="
+                              border-collapse: separate;
+                              width: 100%;
+                              line-height: 100%;
+                            "
+                          >
+                            <tbody>
+                              <tr>
+                                <td
+                                  align="center"
+                                  bgcolor="#007EFF"
+                                  role="presentation"
+                                  style="
+                                    border: 0px #000000 solid;
+                                    border-radius: 8px;
+                                    cursor: auto;
+                                    font-style: normal;
+                                    mso-padding-alt: 12px 25px 14px 26px;
+                                    background: #007eff;
+                                  "
+                                  valign="middle"
+                                >
+                                  <a
+                                    href="Quarastore.com"
+                                    style="
+                                      display: inline-block;
+                                      background: #007eff;
+                                      color: #ffffff;
+                                      font-family: Ubuntu, Helvetica, Arial,
+                                        sans-serif, Helvetica, Arial, sans-serif;
+                                      font-size: 13px;
+                                      font-style: normal;
+                                      font-weight: normal;
+                                      line-height: 100%;
+                                      margin: 0;
+                                      text-decoration: none;
+                                      text-transform: none;
+                                      padding: 12px 25px 14px 26px;
+                                      mso-padding-alt: 0px;
+                                      border-radius: 8px;
+                                    "
+                                    target="_blank"
+                                  >
+                                    <span>Volver a la Web, Quarastore.</span>
+                                  </a>
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
+
+                      <tr>
+                        <td
+                          align="left"
+                          style="
+                            font-size: 0px;
+                            padding: 15px 15px 15px 15px;
+                            word-break: break-word;
+                          "
+                        >
+                          <div
+                            style="
+                              font-family: Ubuntu, Helvetica, Arial, sans-serif;
+                              font-size: 13px;
+                              line-height: 1.5;
+                              text-align: left;
+                              color: #000000;
+                            "
+                          >
+                            <p
+                              style="
+                                font-family: Ubuntu, Helvetica, Arial;
+                                font-size: 11px;
+                                text-align: left;
+                              "
+                            >
+                              © 2024 Todos los derechos reservados para
+                              QuaraStore
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <!--[if mso | IE]></td></tr></table><![endif]-->
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!--[if mso | IE]></td></tr></table><![endif]-->
     </div>
-  </div>
-</body>
+  </body>
 </html>
