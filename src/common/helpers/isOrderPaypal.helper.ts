@@ -1,5 +1,5 @@
 import { type ResponseWebHookPaypal } from 'src/types';
 
 export const isOrderPaypalCapture = (x: any): x is ResponseWebHookPaypal => {
-  return 'status' in x;
+  return 'transmissions' in x;
 };
