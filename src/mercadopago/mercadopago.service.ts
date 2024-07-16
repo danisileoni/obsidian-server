@@ -25,7 +25,6 @@ export class MercadopagoService {
     items: Order,
     idOrder: string,
   ): Promise<PaymentResponse> {
-    console.log(method);
     try {
       const amount = items.details.reduce((sum, item) => {
         if (item.quantityPrimary > 0) {
