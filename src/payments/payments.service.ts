@@ -76,7 +76,6 @@ export class PaymentsService {
     }
 
     if (paymentGateway === 'paypal') {
-      console.log(items);
       order = await this.paypal(items, idOrder);
     }
 
