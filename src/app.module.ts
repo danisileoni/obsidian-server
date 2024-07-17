@@ -22,9 +22,27 @@ import { PlatformModule } from './platform/platform.module';
 import { PassportModule } from '@nestjs/passport';
 import { WsMessageGateway } from './ws-message/ws-message.gateway';
 import { WsMessageModule } from './ws-message/ws-message.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 1000,
+        limit: 3,
+      },
+      {
+        name: 'medium',
+        ttl: 10000,
+        limit: 20,
+      },
+      {
+        name: 'long',
+        ttl: 60000,
+        limit: 100,
+      },
+    ]),
     MulterModule.register({ storage: memoryStorage }),
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     TypeOrmModule.forRoot({

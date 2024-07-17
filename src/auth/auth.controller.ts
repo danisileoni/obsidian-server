@@ -26,7 +26,9 @@ import { LoginDashboardDto } from './dto/login-dashboard.dto';
 import { SendForgotPasswordDto } from './dto/send-forgot-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ConfigService } from '@nestjs/config';
+import { Throttle } from '@nestjs/throttler';
 
+@Throttle({ default: { limit: 3, ttl: 60000 } })
 @Controller('auth')
 export class AuthController {
   constructor(

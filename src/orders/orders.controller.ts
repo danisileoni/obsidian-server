@@ -15,7 +15,9 @@ import { User } from 'src/users/entities/user.entity';
 import { type Order } from './entities/order.entity';
 import { Auth } from 'src/auth/decorators/auth.decorator';
 import { ValidRoles } from 'src/auth/interfaces/valid-roles.enum';
+import { Throttle } from '@nestjs/throttler';
 
+@Throttle({ default: { limit: 10, ttl: 60000 } })
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
